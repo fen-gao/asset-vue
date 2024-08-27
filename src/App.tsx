@@ -1,4 +1,8 @@
-import React, { ReactNode, ErrorInfo } from "react";
+import React, { Suspense, ReactNode, ErrorInfo } from "react";
+import CompanyContent from "./components/company/company-content";
+import Header from "./components/common/header";
+import Logo from "../public/assets/images/logo.png";
+import { FallBackLoading } from "./components/loading";
 
 // Interface for ErrorBoundary props
 interface ErrorBoundaryProps {
@@ -60,9 +64,14 @@ class ErrorBoundary extends React.Component<
 function App() {
   return (
     <ErrorBoundary>
-      <main className="h-screen w-full flex flex-col">
-        <section className="flex-1 p-2 h-full"></section>
-      </main>
+      <Suspense fallback={<FallBackLoading />}>
+        <main className="h-screen w-full flex flex-col">
+          <Header logoSrc={Logo} logoAlt="Logo" />
+          <section className="flex-1 p-2 h-full">
+            <CompanyContent />
+          </section>
+        </main>
+      </Suspense>
     </ErrorBoundary>
   );
 }
