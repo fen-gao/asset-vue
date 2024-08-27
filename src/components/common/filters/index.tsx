@@ -1,50 +1,41 @@
-import React, { useMemo } from "react";
-import {
-  AiOutlineExclamationCircle,
-  AiOutlineThunderbolt,
-} from "react-icons/ai";
+import React, { useMemo } from 'react'
+import { AiOutlineExclamationCircle, AiOutlineThunderbolt } from 'react-icons/ai'
 
-import { FilterDefinition, FilterOptionProps } from "./types";
-import Button from "../../ui/button";
-import { mergeClasses } from "../../../utils/merge-classes";
-import { Filter } from "../../../context/type";
-import useCompanyContext from "../../../hooks/use-company-context";
+import { FilterDefinition, FilterOptionProps } from './types'
+import Button from '../../ui/button'
+import { mergeClasses } from '../../../utils/merge-classes'
+import { Filter } from '../../../context/type'
+import useCompanyContext from '../../../hooks/use-company-context'
 
-const FilterOption = React.memo(
-  ({ isSelected, onSelect, icon, label }: FilterOptionProps) => (
-    <Button
-      variant={isSelected ? "primary" : "secondary"}
-      size="md"
-      onClick={onSelect}
-    >
-      {React.cloneElement(icon, {
-        size: 16,
-        className: mergeClasses("text-blue-500", {
-          "text-white": isSelected,
-        }),
-      })}
-      {label}
-    </Button>
-  )
-);
+const FilterOption = React.memo(({ isSelected, onSelect, icon, label }: FilterOptionProps) => (
+  <Button variant={isSelected ? 'primary' : 'secondary'} size="md" onClick={onSelect}>
+    {React.cloneElement(icon, {
+      size: 16,
+      className: mergeClasses('text-blue-500', {
+        'text-white': isSelected,
+      }),
+    })}
+    {label}
+  </Button>
+))
 
 const filterDefinitions: FilterDefinition[] = [
   {
     type: Filter.ENERGY_SENSOR,
     icon: <AiOutlineThunderbolt />,
-    label: "Sensor de Energia",
+    label: 'Sensor de Energia',
   },
   {
     type: Filter.CRITICAL,
     icon: <AiOutlineExclamationCircle />,
-    label: "Crítico",
+    label: 'Crítico',
   },
-];
+]
 
 export const FilterBar = () => {
-  const { activeFilter, handleActiveFilter } = useCompanyContext();
+  const { activeFilter, handleActiveFilter } = useCompanyContext()
 
-  const filterOptions = useMemo(() => filterDefinitions, []);
+  const filterOptions = useMemo(() => filterDefinitions, [])
 
   return (
     <div className="flex items-center gap-2">
@@ -58,5 +49,5 @@ export const FilterBar = () => {
         />
       ))}
     </div>
-  );
-};
+  )
+}

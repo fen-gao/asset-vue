@@ -1,5 +1,5 @@
-import { useContext } from "react";
-import { CompanyContext } from "../context/company-context";
+import { useContext } from 'react'
+import { CompanyContext } from '../context/company-context'
 
 /**
  * Custom hook to access the CompanyContext value.
@@ -16,13 +16,11 @@ import { CompanyContext } from "../context/company-context";
  * console.log(`Company: ${companyName}, Employees: ${employees.length}`);
  */
 export default function useCompanyContext() {
-  const context = useContext(CompanyContext);
+  const context = useContext(CompanyContext)
 
   if (!context) {
-    throw new Error(
-      "The useCompanyContext hook requires a CompanyContextProvider ancestor in the component tree."
-    );
+    throw new Error('The useCompanyContext hook requires a CompanyContextProvider ancestor in the component tree.')
   }
 
-  return context;
+  return context
 }
