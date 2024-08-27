@@ -1,7 +1,7 @@
 import React, { Suspense, ReactNode, ErrorInfo } from 'react'
 import CompanyContent from './components/company/company-content'
 import Header from './components/common/header'
-import Logo from '../public/assets/images/logo.png'
+import Logo from './assets/images/tractian-logo.png'
 import { FallBackLoading } from './components/loading'
 
 // Interface for ErrorBoundary props

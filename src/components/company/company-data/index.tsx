@@ -1,7 +1,7 @@
 import { MdOutlineRouter, MdWifiTethering } from 'react-icons/md'
 import useUnitContext from '../../../hooks/use-company-context'
 import { mergeClasses } from '../../../utils/merge-classes'
-import ProductImage from '../../../../public/assets/images/image-gear.png'
+import ProductImage from '../../../assets/images/product-image.png'
 import { DeviceInfoProps, HeaderDataProps, UnitContextType } from './types'
 
 const HeaderData = ({ name }: HeaderDataProps) => (
