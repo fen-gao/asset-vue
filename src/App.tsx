@@ -64,7 +64,7 @@ export const App = () => {
       <Suspense fallback={<FallBackLoading />}>
         <main className="h-screen w-full flex flex-col">
           <Header logoSrc={Logo} logoAlt="Logo" />
-          <section className="flex-1 p-2 h-full">
+          <section className="flex-1 p-2 h-auto">
             <CompanyContent />
           </section>
         </main>
