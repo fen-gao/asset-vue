@@ -27,7 +27,7 @@ const TreeSection = ({
   activeFilter,
   companyNodes,
 }: TreeSectionProps) => (
-  <section className="flex flex-1 flex-col border rounded border-card">
+  <section className="flex flex-1 flex-col border rounded border-card min-h-[500px] lg:min-h-0 lg:max-w-[455px]">
     <SearchBar value={search} onSearch={handleSearch} />
     <div className="h-full">
       {isLoading ? (
@@ -59,7 +59,7 @@ const CompanyContent = () => {
   return (
     <div className="flex flex-col gap-3 h-full bg-white border rounded border-card px-4 py-[18px] overflow-hidden">
       <HeaderContent companyName={activeCompany?.name} />
-      <main className="flex-1 flex gap-2 overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row gap-2 overflow-hidden">
         <TreeSection
           isLoading={isLoading}
           hasData={hasData}

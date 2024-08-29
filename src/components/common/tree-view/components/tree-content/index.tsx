@@ -15,7 +15,7 @@ const nodeTypeToIcon: Record<HierarchyElementType, IconType> = {
   area: GoLocation,
 }
 
-const ExpandIcon: React.FC<ExpandIconProps> = ({ isExpanded }) => (
+const ExpandIcon = ({ isExpanded }: ExpandIconProps) => (
   <AiOutlineDown
     size={10}
     className={mergeClasses('transition-transform', {
