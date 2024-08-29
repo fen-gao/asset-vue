@@ -7,13 +7,6 @@ interface FilterCriteria {
   activeFilter: Filter | null
 }
 
-/**
- * Checks if a company entity matches the given filter criteria.
- *
- * @param {CompanyEntity} item - The company entity to check.
- * @param {Filter | null} activeFilter - The active filter to apply.
- * @return {boolean} True if the entity matches the filter, false otherwise.
- */
 const matchesFilter = (item: CompanyEntity, activeFilter: Filter | null): boolean => {
   if (!activeFilter) return true
 
@@ -27,17 +20,19 @@ const matchesFilter = (item: CompanyEntity, activeFilter: Filter | null): boolea
   }
 }
 
-const matchesSearch = (item: CompanyEntity, search: string): boolean => {
-  return !search || item.name.toLowerCase().includes(search.toLowerCase())
+const normalizeString = (str: string): string => {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
-/**
- * Filters a company tree based on the provided filter criteria.
- *
- * @param {CompanyEntity[]} companyTree - The company tree to filter.
- * @param {FilterCriteria} filter - The filter criteria to apply.
- * @return {CompanyEntity[]} The filtered company tree.
- */
+const matchesSearch = (item: CompanyEntity, search: string): boolean => {
+  if (!search) return true
+
+  const normalizedItemName = normalizeString(item.name)
+  const normalizedSearch = normalizeString(search)
+
+  return normalizedItemName.includes(normalizedSearch)
+}
+
 export const filterCompanyTree = (companyTree: CompanyEntity[], filter: FilterCriteria): CompanyEntity[] => {
   const { activeFilter, search } = filter
 
