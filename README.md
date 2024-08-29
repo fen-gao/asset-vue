@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is an implementation of an Asset Tree View Application that visualizes a company's asset hierarchy. It allows users to explore and filter through a tree structure composed of components, assets, and locations.
+This project implements an Asset Tree View Application that visualizes a company's asset hierarchy. It allows users to explore and filter through a tree structure composed of components, assets, and locations.
 
 ## Live Demo
 
@@ -25,6 +25,10 @@ You can view the live application here: [https://asset-vue.vercel.app/](https://
 - React Query
 - Axios
 - React Window (for virtual scrolling)
+
+## Demonstration
+
+A video demonstration of the application, showing its functionality and features, can be viewed here: [Demo Video](https://drive.google.com/file/d/1QkhTms5g_w_X1imS0dPYH3Z53VAKygHJ/view)
 
 ## Getting Started
 
@@ -94,6 +98,10 @@ Given more time, the following aspects of the project could be enhanced:
 4. Add unit and integration tests to ensure reliability and ease of maintenance.
 5. Optimize performance further for extremely large datasets.
 6. Implement a dark mode theme option for improved user experience in different lighting conditions.
+7. Enhance the search functionality with advanced algorithms for quicker location of specific assets or components.
+8. Implement real-time updates using WebSocket connections for live asset status and sensor readings.
+9. Improve mobile responsiveness to ensure smooth navigation on smaller screens.
+10. Add accessibility features, including improved keyboard navigation and screen reader compatibility.
 
 ## Contributing
 
