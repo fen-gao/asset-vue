@@ -13,6 +13,6 @@ import { twMerge } from 'tailwind-merge'
  * @example
  * mergeClasses('font-bold', 'text-lg', { 'bg-red-500': isError }, isLarge && 'text-xl')
  */
-export function mergeClasses(...classValues: ClassValue[]): string {
+export const mergeClasses = (...classValues: ClassValue[]): string => {
   return twMerge(clsx(classValues))
 }

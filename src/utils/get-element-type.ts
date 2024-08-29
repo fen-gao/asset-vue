@@ -12,7 +12,7 @@ export type HierarchyElementType = 'facility' | 'area' | 'equipment' | 'sensor'
  * @returns The type of the element
  * @throws Error if the element doesn't match any known type
  */
-export function determineElementType(element: CompanyEntity): HierarchyElementType {
+export const determineElementType = (element: CompanyEntity): HierarchyElementType => {
   if (isSensor(element)) {
     return 'sensor'
   }
@@ -37,7 +37,7 @@ export function determineElementType(element: CompanyEntity): HierarchyElementTy
  * @param element - The component hierarchy element to check
  * @returns True if the element is a sensor, false otherwise
  */
-function isSensor(element: CompanyEntity): boolean {
+const isSensor = (element: CompanyEntity): boolean => {
   return element.sensorType !== undefined
 }
 
@@ -46,7 +46,7 @@ function isSensor(element: CompanyEntity): boolean {
  * @param element - The component hierarchy element to check
  * @returns True if the element is an equipment, false otherwise
  */
-function isEquipment(element: CompanyEntity): boolean {
+const isEquipment = (element: CompanyEntity): boolean => {
   return element.sensorType === undefined && element.status !== undefined
 }
 
@@ -55,7 +55,7 @@ function isEquipment(element: CompanyEntity): boolean {
  * @param element - The component hierarchy element to check
  * @returns True if the element is an area, false otherwise
  */
-function isArea(element: CompanyEntity): boolean {
+const isArea = (element: CompanyEntity): boolean => {
   return element.parentId !== null
 }
 
@@ -64,6 +64,6 @@ function isArea(element: CompanyEntity): boolean {
  * @param element - The component hierarchy element to check
  * @returns True if the element is a facility, false otherwise
  */
-function isFacility(element: CompanyEntity): boolean {
+const isFacility = (element: CompanyEntity): boolean => {
   return element.parentId === null
 }

@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { AiOutlineGold } from 'react-icons/ai'
-import useCompanyContext from '../../../hooks/use-company-context'
+import { useCompanyContext } from '../../../hooks/use-company-context'
 import { fetchCompanies } from '../../../service/api'
 import { mergeClasses } from '../../../utils/merge-classes'
-import Button from '../../ui/button'
+import { Button } from '../../ui/button'
 import { CompanyInfo, CompanyButtontProps, CompanyContextType, CompanyListContentProps } from './types'
 
 const CompanyButton = ({ company, isActive, onClick }: CompanyButtontProps) => (
@@ -32,7 +32,7 @@ const CompanyListContent = ({ companies, activeCompany, handleActiveCompany }: C
   </div>
 )
 
-const CompanyList = () => {
+export const CompanyList = () => {
   const { handleActiveCompany, activeCompany } = useCompanyContext() as CompanyContextType
 
   const { data: companies } = useSuspenseQuery<CompanyInfo[]>({
@@ -57,5 +57,3 @@ const CompanyList = () => {
     <CompanyListContent companies={companies} activeCompany={activeCompany} handleActiveCompany={handleActiveCompany} />
   )
 }
-
-export default CompanyList

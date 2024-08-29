@@ -2,10 +2,10 @@ import React, { useMemo } from 'react'
 import { AiOutlineExclamationCircle, AiOutlineThunderbolt } from 'react-icons/ai'
 
 import { FilterDefinition, FilterOptionProps } from './types'
-import Button from '../../ui/button'
+import { Button } from '../../ui/button'
 import { mergeClasses } from '../../../utils/merge-classes'
 import { Filter } from '../../../context/type'
-import useCompanyContext from '../../../hooks/use-company-context'
+import { useCompanyContext } from '../../../hooks/use-company-context'
 
 const FilterOption = React.memo(({ isSelected, onSelect, icon, label }: FilterOptionProps) => (
   <Button variant={isSelected ? 'primary' : 'secondary'} size="md" onClick={onSelect}>

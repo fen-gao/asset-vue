@@ -15,7 +15,7 @@ import { CompanyContext } from '../context/company-context'
  * const { companyName, employees } = useCompanyContext();
  * console.log(`Company: ${companyName}, Employees: ${employees.length}`);
  */
-export default function useCompanyContext() {
+export const useCompanyContext = () => {
   const context = useContext(CompanyContext)
 
   if (!context) {

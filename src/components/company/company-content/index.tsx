@@ -1,8 +1,8 @@
-import useCompanyContext from '../../../hooks/use-company-context'
-import useCompanyTree from '../../../hooks/use-company-tree'
+import { useCompanyContext } from '../../../hooks/use-company-context'
+import { useCompanyTree } from '../../../hooks/use-company-tree'
 import { FilterBar } from '../../common/filters'
 import { SearchBar } from '../../common/search'
-import ComponentData from '../company-data'
+import { ComponentData } from '../company-data'
 import CompanyTreeView from '../company-tree-view'
 import { HeaderContentProps, TreeSectionProps } from './types'
 
@@ -50,7 +50,7 @@ const TreeSection = ({
   </section>
 )
 
-const CompanyContent = () => {
+export const CompanyContent = () => {
   const { activeCompany, activeFilter, search, activeAsset, handleSearch, handleActiveAsset } = useCompanyContext()
   const { companyNodes, companyRoot, isLoading } = useCompanyTree({ activeCompany, activeFilter, search })
 
@@ -76,5 +76,3 @@ const CompanyContent = () => {
     </div>
   )
 }
-
-export default CompanyContent

@@ -1,4 +1,4 @@
-import React, { KeyboardEvent } from 'react'
+import { KeyboardEvent } from 'react'
 import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
 import { FaBolt } from 'react-icons/fa6'
 import { GoLocation } from 'react-icons/go'

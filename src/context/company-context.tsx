@@ -1,12 +1,12 @@
 import { createContext, useReducer } from 'react'
 import { Company, FilterType, CompanyContextProps } from './type'
 
-import reducer, { ActionTypes, INITIAL_STATE } from './reducer'
+import { ActionTypes, INITIAL_STATE, reducer } from './reducer'
 import { Asset } from '../types'
 
 export const CompanyContext = createContext<CompanyContextProps | null>(null)
 
-export default function CompanyContextProvider({ children }: { children: React.ReactNode }) {
+export const CompanyContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [unitData, dispatch] = useReducer(reducer, INITIAL_STATE)
 
   const handleActiveCompany = (nextUnit: Company) => {

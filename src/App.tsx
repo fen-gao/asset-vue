@@ -1,6 +1,6 @@
 import React, { Suspense, ReactNode, ErrorInfo } from 'react'
-import CompanyContent from './components/company/company-content'
-import Header from './components/common/header'
+import { CompanyContent } from './components/company/company-content'
+import { Header } from './components/common/header'
 import Logo from './assets/images/tractian-logo.png'
 import { FallBackLoading } from './components/loading'
 
@@ -58,7 +58,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
  * Main App component
  * Wraps the entire application with ErrorBoundary and Suspense
  */
-function App() {
+export const App = () => {
   return (
     <ErrorBoundary>
       <Suspense fallback={<FallBackLoading />}>
@@ -72,5 +72,3 @@ function App() {
     </ErrorBoundary>
   )
 }
-
-export default App

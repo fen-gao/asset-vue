@@ -38,7 +38,7 @@ const matchesSearch = (item: CompanyEntity, search: string): boolean => {
  * @param {FilterCriteria} filter - The filter criteria to apply.
  * @return {CompanyEntity[]} The filtered company tree.
  */
-export default function filterCompanyTree(companyTree: CompanyEntity[], filter: FilterCriteria): CompanyEntity[] {
+export const filterCompanyTree = (companyTree: CompanyEntity[], filter: FilterCriteria): CompanyEntity[] => {
   const { activeFilter, search } = filter
 
   if (!activeFilter && !search) return companyTree

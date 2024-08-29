@@ -10,7 +10,7 @@ import { loadingStyles } from './styles'
  * @param className - Additional CSS classes to apply
  * @param ariaLabel - Aria label for accessibility
  */
-const Loading = ({ size, color, className, ariaLabel = 'Loading', ...props }: LoadingProps) => {
+export const Loading = ({ size, color, className, ariaLabel = 'Loading', ...props }: LoadingProps) => {
   return (
     <span
       className={mergeClasses(loadingStyles({ size, color }), className)}
@@ -20,5 +20,3 @@ const Loading = ({ size, color, className, ariaLabel = 'Loading', ...props }: Lo
     />
   )
 }
-
-export default Loading

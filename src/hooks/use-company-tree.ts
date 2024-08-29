@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchAssetsByCompany, fetchLocationsByCompany } from '../service/api'
 import { useMemo } from 'react'
 
-import constructCompanyHierarchy, { CompanyEntity } from '../utils/compose-tree'
+import { CompanyEntity, constructCompanyHierarchy } from '../utils/compose-tree'
 import { Company, FilterType } from '../context/type'
-import filterCompanyTree from '../utils/filter-tree'
+import { filterCompanyTree } from '../utils/filter-tree'
 
 interface UseCompanyTreeProps {
   activeCompany: Company | null
@@ -17,7 +17,7 @@ interface CompanyTree {
   map: Map<string, CompanyEntity>
 }
 
-export default function useCompanyTree({ activeCompany, activeFilter, search }: UseCompanyTreeProps) {
+export const useCompanyTree = ({ activeCompany, activeFilter, search }: UseCompanyTreeProps) => {
   const { data: assets, isLoading: isLoadingAssets } = useQuery({
     queryKey: ['assets', activeCompany?.id],
     queryFn: () => fetchAssetsByCompany(activeCompany!.id),

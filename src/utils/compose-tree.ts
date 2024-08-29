@@ -50,7 +50,7 @@ const createEntityNode = (source: Location | Asset): CompanyEntity => ({
  * @param {Asset[]} assets - The list of assets to include in the hierarchy.
  * @return {HierarchyStructure} An object containing the roots of the hierarchy and a lookup map of entities.
  */
-export default function constructCompanyHierarchy(locations: Location[], assets: Asset[]): HierarchyStructure {
+export const constructCompanyHierarchy = (locations: Location[], assets: Asset[]): HierarchyStructure => {
   const entityIndex = new Map<string, CompanyEntity>()
   const topLevelEntities: CompanyEntity[] = []
 

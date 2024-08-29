@@ -1,21 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { VariableSizeList as List } from 'react-window'
+import { TreeItem, VirtualizedTreeViewProps } from './types'
 
-export interface TreeItem {
-  id: string
-  name: string
-  children?: TreeItem[]
-  [key: string]: any
-}
-
-interface VirtualizedTreeViewProps<T extends TreeItem> {
-  items: T[]
-  expandedItems: Set<string>
-  onItemSelect?: (item: T) => void
-  renderItem: (item: T, isExpanded: boolean, isSelected: boolean) => React.ReactNode
-}
-
-function useContainerDimensions() {
+export const useContainerDimensions = () => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const ref = useRef<HTMLDivElement>(null)
 
@@ -40,12 +27,12 @@ function useContainerDimensions() {
   return [ref, dimensions] as const
 }
 
-function VirtualizedTreeView<T extends TreeItem>({
+export const VirtualizedTreeView = <T extends TreeItem>({
   items,
   expandedItems,
   onItemSelect,
   renderItem,
-}: VirtualizedTreeViewProps<T>) {
+}: VirtualizedTreeViewProps<T>) => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [containerRef, { width, height }] = useContainerDimensions()
   const listRef = useRef<List>(null)
@@ -113,5 +100,3 @@ function VirtualizedTreeView<T extends TreeItem>({
     </div>
   )
 }
-
-export default VirtualizedTreeView

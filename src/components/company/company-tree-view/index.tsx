@@ -8,7 +8,7 @@ import { Sensor, Status } from '../../../types'
 import { Filter } from '../../../context/type'
 import { determineElementType } from '../../../utils/get-element-type'
 import { mergeClasses } from '../../../utils/merge-classes'
-import VirtualizedTreeView from '../../ui/virtualized-tree-view'
+import { VirtualizedTreeView } from '../../ui/virtualized-tree-view'
 import { CompanyTreeViewProps, TreeNodeItemProps } from './types'
 
 const NODE_TYPE_ICON_MAP = {

@@ -1,7 +1,7 @@
 import { TreeItem } from './components/tree-item'
 import { TreeViewProps } from './types'
 
-const TreeView = ({ items, selectedAsset, onAssetSelect, expandedNodeIds }: TreeViewProps) => {
+export const TreeView = ({ items, selectedAsset, onAssetSelect, expandedNodeIds }: TreeViewProps) => {
   return (
     <div className="h-full overflow-auto">
       {items.map((item) => (
@@ -16,5 +16,3 @@ const TreeView = ({ items, selectedAsset, onAssetSelect, expandedNodeIds }: Tree
     </div>
   )
 }
-
-export default TreeView

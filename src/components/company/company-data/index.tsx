@@ -1,8 +1,8 @@
 import { MdOutlineRouter, MdWifiTethering } from 'react-icons/md'
-import useUnitContext from '../../../hooks/use-company-context'
 import { mergeClasses } from '../../../utils/merge-classes'
 import ProductImage from '../../../assets/images/product-image.png'
 import { DeviceInfoProps, HeaderDataProps, UnitContextType } from './types'
+import { useCompanyContext } from '../../../hooks/use-company-context'
 
 const HeaderData = ({ name }: HeaderDataProps) => (
   <header className="px-4 py-3 border-b border-card">
@@ -39,8 +39,8 @@ const DeviceInfo = ({ title, icon, value }: DeviceInfoProps) => (
   </div>
 )
 
-const ComponentData = () => {
-  const { activeAsset } = useUnitContext() as UnitContextType
+export const ComponentData = () => {
+  const { activeAsset } = useCompanyContext() as UnitContextType
 
   return (
     <section
@@ -73,5 +73,3 @@ const ComponentData = () => {
     </section>
   )
 }
-
-export default ComponentData

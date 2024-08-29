@@ -1,6 +1,6 @@
 import React from 'react'
 import { AiOutlineSearch } from 'react-icons/ai'
-import Button from '../../ui/button'
+import { Button } from '../../ui/button'
 import { SearchBarProps } from './types'
 
 export const SearchBar = ({ value, onSearch, placeholder = 'Buscar Ativo ou Local' }: SearchBarProps) => {

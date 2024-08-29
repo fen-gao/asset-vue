@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import UnitContextProvider from '../context/company-context'
+import { CompanyContextProvider } from '../context/company-context'
 import { ProvidersProps } from './types'
 
 // Configuration for QueryClient
@@ -16,14 +16,12 @@ const queryClientConfig = {
  * Providers component that wraps the application with necessary context providers.
  * It sets up React Query and the UnitContext.
  */
-const Providers: React.FC<ProvidersProps> = ({ children }) => {
+export const Providers = ({ children }: ProvidersProps) => {
   const [queryClient] = useState(() => new QueryClient(queryClientConfig))
 
   return (
     <QueryClientProvider client={queryClient}>
-      <UnitContextProvider>{children}</UnitContextProvider>
+      <CompanyContextProvider>{children}</CompanyContextProvider>
     </QueryClientProvider>
   )
 }
-
-export default Providers
