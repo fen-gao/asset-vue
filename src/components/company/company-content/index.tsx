@@ -21,8 +21,8 @@ export const CompanyContent = () => {
         </div>
         <Filters />
       </header>
-      <main className="flex-1 flex gap-2 overflow-hidden">
-        <section className="flex flex-1 flex-col border rounded border-card min-h-[500px] lg:min-h-0 overflow-hidden lg:max-w-[450px]">
+      <main className="flex-1 flex flex-col lg:flex-row gap-2 overflow-hidden">
+        <section className="flex flex-col border rounded border-card min-h-[500px] w-full lg:w-[450px] lg:min-h-0 overflow-hidden">
           <Search value={search} handleSearch={handleSearch} />
           <div className="flex-1">
             {isLoading ? (
@@ -43,7 +43,9 @@ export const CompanyContent = () => {
             )}
           </div>
         </section>
-        <ComponentData />
+        <div className="flex-1 overflow-hidden">
+          <ComponentData />
+        </div>
       </main>
     </div>
   )
