@@ -21,13 +21,18 @@ export default function filterCompanyTree(
   }
 
   const matchesSearch = (node: TreeNode): boolean => {
-    return node.name.toLowerCase().includes(search.toLowerCase())
+    if (!search) return true
+
+    const normalizedNodeName = node.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+    const normalizedSearch = search.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+    return normalizedNodeName.includes(normalizedSearch)
   }
 
   const filterTree = (nodes: TreeNode[]): TreeNode[] => {
     return nodes.reduce<TreeNode[]>((filteredNodes, node) => {
       let nodeMatchesFilter = !activeFilter || matchesFilter(node)
-      let nodeMatchesSearch = !search || matchesSearch(node)
+      let nodeMatchesSearch = matchesSearch(node)
 
       let filteredChildren: TreeNode[] = []
 
