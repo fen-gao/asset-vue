@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchAssetsByCompany, fetchLocationsByCompany } from '../service/api'
-import { useMemo } from 'react'
+import { getAssets, getLocations } from '../service/api'
+import { useEffect, useMemo, useState } from 'react'
 
-import { CompanyEntity, constructCompanyHierarchy } from '../utils/compose-tree'
+import buildCompanyTree, { TreeNode } from '../utils/compose-tree'
 import { Company, FilterType } from '../context/type'
-import { filterCompanyTree } from '../utils/filter-tree'
+import filterCompanyTree from '../utils/filter-tree'
 
 interface UseCompanyTreeProps {
   activeCompany: Company | null
@@ -13,42 +13,42 @@ interface UseCompanyTreeProps {
 }
 
 interface CompanyTree {
-  tree: CompanyEntity[]
-  map: Map<string, CompanyEntity>
+  tree: TreeNode[]
+  map: Map<string, TreeNode>
 }
 
 export const useCompanyTree = ({ activeCompany, activeFilter, search }: UseCompanyTreeProps) => {
+  const [companyTree, setCompanyTree] = useState<CompanyTree>({ tree: [], map: new Map<string, TreeNode>() })
+
   const { data: assets, isLoading: isLoadingAssets } = useQuery({
-    queryKey: ['assets', activeCompany?.id],
-    queryFn: () => fetchAssetsByCompany(activeCompany!.id),
+    queryKey: ['assets', activeCompany],
+    queryFn: () => getAssets(activeCompany!.id),
     enabled: !!activeCompany,
   })
 
   const { data: locations, isLoading: isLoadingLocations } = useQuery({
-    queryKey: ['locations', activeCompany?.id],
-    queryFn: () => fetchLocationsByCompany(activeCompany!.id),
+    queryKey: ['locations', activeCompany],
+    queryFn: () => getLocations(activeCompany!.id),
     enabled: !!activeCompany,
   })
 
-  const companyTree = useMemo<CompanyTree>(() => {
+  useEffect(() => {
     if (assets && locations) {
-      const builtHierarchy = constructCompanyHierarchy(locations, assets)
-      return {
-        tree: builtHierarchy.roots,
-        map: builtHierarchy.entityLookup,
-      }
+      const buildedTree = buildCompanyTree(locations, assets)
+      setCompanyTree(buildedTree)
     }
-    return { tree: [], map: new Map<string, CompanyEntity>() }
   }, [assets, locations])
 
   const listUnitsFiltered = useMemo(
     () => filterCompanyTree(companyTree.tree, { search, activeFilter }),
-    [search, activeFilter, companyTree.tree]
+    [search, activeFilter, companyTree]
   )
+
+  const isLoading = isLoadingAssets || isLoadingLocations
 
   return {
     companyRoot: listUnitsFiltered,
-    companyNodes: companyTree.map,
-    isLoading: isLoadingAssets || isLoadingLocations,
+    companyNodes: companyTree?.map,
+    isLoading,
   }
 }

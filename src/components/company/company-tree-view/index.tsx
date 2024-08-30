@@ -1,93 +1,51 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react'
-import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
-import { FaBolt } from 'react-icons/fa6'
-import { GoLocation } from 'react-icons/go'
-import { IoCubeOutline } from 'react-icons/io5'
-import { CompanyEntity } from '../../../utils/compose-tree'
-import { Sensor, Status } from '../../../types'
-import { Filter } from '../../../context/type'
+import { TreeNode } from '../../../utils/compose-tree'
 import { determineElementType } from '../../../utils/get-element-type'
-import { mergeClasses } from '../../../utils/merge-classes'
-import { VirtualizedTreeView } from '../../ui/virtualized-tree-view'
-import { CompanyTreeViewProps, TreeNodeItemProps } from './types'
+import { CompanyTreeViewProps } from './types'
+import { Sensor, Status } from '../../../types'
+import TreeView from '../../common/tree-view'
+import { Filter } from '../../../context/type'
 
-const NODE_TYPE_ICON_MAP = {
-  facility: GoLocation,
-  equipment: IoCubeOutline,
-  sensor: AiOutlineCodepen,
-  area: GoLocation,
-}
-
-const getAncestorIds = (node: CompanyEntity, treeMap: Map<string, CompanyEntity>): string[] => {
-  const ancestorIds = []
-  let currentNode = node
-  while (currentNode.parentId) {
-    currentNode = treeMap.get(currentNode.parentId) as CompanyEntity
-    if (currentNode) {
-      ancestorIds.unshift(currentNode.id)
+const getParents = (node: TreeNode, treeMap: Map<string, TreeNode>) => {
+  const parents = []
+  let current = node
+  while (current.parentId) {
+    current = treeMap.get(current.parentId) as TreeNode
+    if (current) {
+      parents.unshift(current.id)
     } else {
       break
     }
   }
-  return ancestorIds
+  return parents
 }
 
-const isNodeMatchingFilter = (node: CompanyEntity, activeFilter: Filter | null, searchTerm: string): boolean => {
+const matchFilter = (node: TreeNode, activeFilter: Filter | null, search: string): boolean => {
   const isCriticalFilter = activeFilter === Filter.CRITICAL
   const isEnergySensorFilter = activeFilter === Filter.ENERGY_SENSOR
 
-  const matchesEnergySensor = isEnergySensorFilter && node.sensorType === Sensor.ENERGY
-  const matchesCriticalFilter = isCriticalFilter && node.status === Status.ALERT && node.sensorType !== Sensor.ENERGY
-  const matchesSearch = node.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const matchEnergySensor = isEnergySensorFilter && node.sensorType === Sensor.ENERGY
+  const matchCriticalFilter = isCriticalFilter && node.status === Status.ALERT && node.sensorType !== Sensor.ENERGY
+  const matchSearch = node.name.toLowerCase().includes(search.toLowerCase())
 
-  return matchesEnergySensor || matchesCriticalFilter || matchesSearch
+  return matchEnergySensor || matchCriticalFilter || matchSearch
 }
 
-const TreeNodeItem = React.memo(({ node, isExpanded, isSelected }: TreeNodeItemProps) => {
-  const nodeType = determineElementType(node)
-  const Icon = NODE_TYPE_ICON_MAP[nodeType]
+export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
+  data,
+  onClickAsset,
+  search,
+  activeFilter,
+  nodes,
+}) => {
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
-  const isComponent = nodeType === 'sensor'
-  const isOperating = node.status === Status.OPERATING
-  const isAlert = node.status === Status.ALERT
-  const isEnergySensor = node.sensorType === Sensor.ENERGY
-  const hasChildren = node.children && node.children.length > 0
+  const handleToggle = useCallback(
+    (node: TreeNode) => {
+      const { id, name, locationId, sensorType, status, parentId, gatewayId, sensorId } = node
+      const isComponentType = determineElementType(node) === 'component'
 
-  return (
-    <div className={mergeClasses('ps-5 my-4', { 'cursor-pointer': hasChildren || isComponent })}>
-      <div
-        className={mergeClasses('ps-1 flex items-center gap-2', {
-          'bg-blue-500 text-white': isComponent && isSelected,
-        })}
-      >
-        {hasChildren && <AiOutlineDown size={10} className={mergeClasses('', { 'rotate-180': isExpanded })} />}
-        <Icon className={mergeClasses('text-blue-500', { 'text-white': isSelected && isComponent })} size={22} />
-        <span
-          className={mergeClasses(
-            'uppercase after:content=[" "] after:inline-block after:w-2 after:h-2 after:rounded after:ms-2',
-            {
-              'after:bg-green-500': isOperating,
-              'after:bg-red-500': isAlert,
-              'after:content-none': isEnergySensor,
-            }
-          )}
-        >
-          {node.name}
-        </span>
-        {isEnergySensor && <FaBolt className="text-green-500" />}
-      </div>
-    </div>
-  )
-})
-
-const CompanyTreeView = ({ data, onAssetSelect, searchTerm, activeFilter, nodeMap }: CompanyTreeViewProps) => {
-  const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set())
-
-  const handleNodeToggle = useCallback(
-    (node: CompanyEntity) => {
-      const isComponent = determineElementType(node) === 'sensor'
-
-      setExpandedNodeIds((prevExpanded) => {
+      setExpandedItems((prevExpanded) => {
         const newExpanded = new Set(prevExpanded)
         if (newExpanded.has(node.id)) {
           newExpanded.delete(node.id)
@@ -96,54 +54,54 @@ const CompanyTreeView = ({ data, onAssetSelect, searchTerm, activeFilter, nodeMa
         }
         return newExpanded
       })
-
-      if (isComponent) {
-        const { id, name, locationId, sensorType, status, parentId, gatewayId, sensorId } = node
-        onAssetSelect({ id, name, locationId: locationId ?? null, sensorType, status, parentId, gatewayId, sensorId })
+      if (isComponentType) {
+        onClickAsset({ id, name, locationId: locationId!, sensorType, status, parentId, gatewayId, sensorId })
       }
     },
-    [onAssetSelect]
+    [onClickAsset]
   )
 
-  const expandedNodesBasedOnFilter = useMemo(() => {
+  useEffect(() => {
     const nodesToExpand = new Set<string>()
-    if (searchTerm || activeFilter) {
-      nodeMap.forEach((node) => {
-        if (isNodeMatchingFilter(node, activeFilter, searchTerm)) {
-          const ancestorIds = getAncestorIds(node, nodeMap)
-          ancestorIds.forEach((id) => nodesToExpand.add(id))
+    if (search || activeFilter) {
+      nodes.forEach((node) => {
+        const nodeMatchesFilter = matchFilter(node, activeFilter, search)
+        if (nodeMatchesFilter) {
+          const ancestors = getParents(node, nodes)
+          ancestors.forEach((id) => nodesToExpand.add(id))
           nodesToExpand.add(node.id)
         }
       })
 
-      nodeMap.forEach((node) => {
-        if (node.children?.some((child: CompanyEntity) => nodesToExpand.has(child.id))) {
+      nodes.forEach((node) => {
+        if (node.children && node.children.some((child: TreeNode) => nodesToExpand.has(child.id))) {
           nodesToExpand.add(node.id)
         }
       })
     }
-    return nodesToExpand
-  }, [searchTerm, nodeMap, activeFilter])
+    setExpandedItems(nodesToExpand)
+  }, [search, nodes, activeFilter])
 
-  useEffect(() => {
-    setExpandedNodeIds(expandedNodesBasedOnFilter)
-  }, [expandedNodesBasedOnFilter])
-
-  const renderItem = useCallback(
-    (node: CompanyEntity, isExpanded: boolean, isSelected: boolean) => (
-      <TreeNodeItem node={node} isExpanded={isExpanded} isSelected={isSelected} />
-    ),
-    []
-  )
+  const flattenedData = useMemo(() => {
+    const flatten = (items: TreeNode[], depth = 0): TreeNode[] => {
+      return items.reduce((acc: TreeNode[], item) => {
+        const newItem = { ...item, depth }
+        acc.push(newItem)
+        if (item.children && expandedItems.has(item.id)) {
+          acc.push(...flatten(item.children, depth + 1))
+        }
+        return acc
+      }, [])
+    }
+    return flatten(data)
+  }, [data, expandedItems])
 
   return (
-    <VirtualizedTreeView
-      items={data}
-      expandedItems={expandedNodeIds}
-      onItemSelect={handleNodeToggle}
-      renderItem={renderItem}
+    <TreeView
+      data={flattenedData}
+      activeAsset={null} // You might want to pass this as a prop if needed
+      onClickAsset={handleToggle}
+      expandedNodes={expandedItems}
     />
   )
 }
-
-export default React.memo(CompanyTreeView)

@@ -1,53 +1,47 @@
 import { Filter } from '../context/type'
 import { Sensor, Status } from '../types'
-import { CompanyEntity } from './compose-tree'
+import { TreeNode } from './compose-tree'
 
-interface FilterCriteria {
-  search: string
-  activeFilter: Filter | null
-}
-
-const matchesFilter = (item: CompanyEntity, activeFilter: Filter | null): boolean => {
-  if (!activeFilter) return true
-
-  switch (activeFilter) {
-    case Filter.ENERGY_SENSOR:
-      return item.sensorType === Sensor.ENERGY
-    case Filter.CRITICAL:
-      return item.status === Status.ALERT && item.sensorType !== Sensor.ENERGY
-    default:
-      return false
-  }
-}
-
-const normalizeString = (str: string): string => {
-  return str.toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
-const matchesSearch = (item: CompanyEntity, search: string): boolean => {
-  if (!search) return true
-
-  const normalizedItemName = normalizeString(item.name)
-  const normalizedSearch = normalizeString(search)
-
-  return normalizedItemName.includes(normalizedSearch)
-}
-
-export const filterCompanyTree = (companyTree: CompanyEntity[], filter: FilterCriteria): CompanyEntity[] => {
+export default function filterCompanyTree(
+  companyTree: TreeNode[],
+  filter: { search: string; activeFilter: Filter | null }
+): TreeNode[] {
   const { activeFilter, search } = filter
+
+  const isCriticalFilter = activeFilter === Filter.CRITICAL
+  const isEnergySensorFilter = activeFilter === Filter.ENERGY_SENSOR
 
   if (!activeFilter && !search) return companyTree
 
-  const filterTree = (nodes: CompanyEntity[]): CompanyEntity[] => {
-    return nodes.reduce<CompanyEntity[]>((filteredNodes, item) => {
-      const nodeMatchesFilter = matchesFilter(item, activeFilter)
-      const nodeMatchesSearch = matchesSearch(item, search)
+  const matchesFilter = (node: TreeNode): boolean => {
+    const matchEnergySensor = isEnergySensorFilter && node.sensorType === Sensor.ENERGY
+    const matchCriticalFilter = isCriticalFilter && node.status === Status.ALERT && node.sensorType !== Sensor.ENERGY
 
-      const filteredChildren = item.children ? filterTree(item.children) : []
+    return matchEnergySensor || matchCriticalFilter
+  }
 
-      if ((nodeMatchesFilter && nodeMatchesSearch) || filteredChildren.length > 0) {
+  const matchesSearch = (node: TreeNode): boolean => {
+    return node.name.toLowerCase().includes(search.toLowerCase())
+  }
+
+  const filterTree = (nodes: TreeNode[]): TreeNode[] => {
+    return nodes.reduce<TreeNode[]>((filteredNodes, node) => {
+      let nodeMatchesFilter = !activeFilter || matchesFilter(node)
+      let nodeMatchesSearch = !search || matchesSearch(node)
+
+      let filteredChildren: TreeNode[] = []
+
+      if (node.children) {
+        filteredChildren = filterTree(node.children)
+        if (filteredChildren.length > 0) {
+          nodeMatchesFilter = true
+          nodeMatchesSearch = true
+        }
+      }
+
+      if (nodeMatchesFilter && nodeMatchesSearch) {
         filteredNodes.push({
-          ...item,
+          ...node,
           children: filteredChildren,
         })
       }

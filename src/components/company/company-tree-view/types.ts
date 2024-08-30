@@ -1,18 +1,12 @@
-import { CompanyEntity } from '../../../utils/compose-tree'
+import { FilterType } from '../../../context/type'
 import { Asset } from '../../../types'
-import { Filter } from '../../../context/type'
+import { TreeNode } from '../../../utils/compose-tree'
 
 export interface CompanyTreeViewProps {
-  data: CompanyEntity[]
+  data: TreeNode[]
   activeAsset: Asset | null
-  onAssetSelect: (nextAsset: Asset) => void
-  searchTerm: string
-  activeFilter: Filter
-  nodeMap: Map<string, CompanyEntity>
-}
-
-export interface TreeNodeItemProps {
-  node: CompanyEntity
-  isExpanded: boolean
-  isSelected: boolean
+  onClickAsset: (nextAsset: Asset) => void
+  search: string
+  activeFilter: FilterType
+  nodes: Map<string, TreeNode>
 }
