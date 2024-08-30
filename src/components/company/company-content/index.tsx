@@ -22,9 +22,9 @@ export const CompanyContent = () => {
         <Filters />
       </header>
       <main className="flex-1 flex gap-2 overflow-hidden">
-        <section className="flex flex-1  flex-col border rounded border-card min-h-[500px] lg:min-h-0 overflow-hidden lg:max-w-[450px]">
+        <section className="flex flex-1 flex-col border rounded border-card min-h-[500px] lg:min-h-0 overflow-hidden lg:max-w-[450px]">
           <Search value={search} handleSearch={handleSearch} />
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1">
             {isLoading ? (
               <span className="text-gray-600 text-sm block text-center mt-4">Carregando...</span>
             ) : hasData ? (
