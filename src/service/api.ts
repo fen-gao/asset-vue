@@ -1,34 +1,52 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { Asset, Location } from '../types'
 import { Company } from '../context/type'
+import memoize from 'lodash/memoize'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000,
 })
 
-export const getCompanies = async () => {
+const cache: Record<string, any> = {}
+
+const fetchWithCache = async <T>(url: string, ttl = 60000): Promise<T> => {
+  const cachedData = cache[url]
+  if (cachedData && Date.now() - cachedData.timestamp < ttl) {
+    return cachedData.data
+  }
+
   try {
-    const { data } = await api.get<Company[]>('/companies')
+    const { data } = await api.get<T>(url)
+    cache[url] = { data, timestamp: Date.now() }
     return data
   } catch (error) {
-    return null
+    if (error instanceof AxiosError) {
+      console.error(`Error fetching ${url}:`, error.message)
+      throw new Error(`Failed to fetch data: ${error.message}`)
+    }
+    throw error
   }
 }
 
-export const getLocations = async (companyId: string) => {
-  try {
-    const { data } = await api.get<Location[]>(`/companies/${companyId}/locations`)
-    return data
-  } catch (error) {
-    return null
-  }
-}
+export const getCompanies = memoize(async (): Promise<Company[]> => {
+  return fetchWithCache<Company[]>('/companies')
+})
 
-export const getAssets = async (companyId: string) => {
+export const getLocations = memoize(async (companyId: string): Promise<Location[]> => {
+  return fetchWithCache<Location[]>(`/companies/${companyId}/locations`)
+})
+
+export const getAssets = memoize(async (companyId: string): Promise<Asset[]> => {
+  return fetchWithCache<Asset[]>(`/companies/${companyId}/assets`)
+})
+
+export const getCompanyData = async (companyId: string) => {
   try {
-    const { data } = await api.get(`/companies/${companyId}/assets`)
-    return data as Asset[]
+    const [locations, assets] = await Promise.all([getLocations(companyId), getAssets(companyId)])
+    return { locations, assets }
   } catch (error) {
-    return null
+    console.error('Error fetching company data:', error)
+    throw error
   }
 }

@@ -1,22 +1,10 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react'
-import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
-import { GoLocation } from 'react-icons/go'
-import { IoCubeOutline } from 'react-icons/io5'
 import { TreeNode } from '../../../utils/compose-tree'
 import { determineElementType } from '../../../utils/get-element-type'
-import { mergeClasses } from '../../../utils/merge-classes'
-import { FaBolt } from 'react-icons/fa6'
 import { CompanyTreeViewProps } from './types'
 import { Sensor, Status } from '../../../types'
 import TreeView from '../../common/tree-view'
 import { Filter } from '../../../context/type'
-
-const iconMap = {
-  location: GoLocation,
-  'sub-location': GoLocation,
-  asset: IoCubeOutline,
-  component: AiOutlineCodepen,
-}
 
 const getParents = (node: TreeNode, treeMap: Map<string, TreeNode>) => {
   const parents = []
@@ -41,47 +29,6 @@ const matchFilter = (node: TreeNode, activeFilter: Filter | null, search: string
   const matchSearch = node.name.toLowerCase().includes(search.toLowerCase())
 
   return matchEnergySensor || matchCriticalFilter || matchSearch
-}
-
-const renderCompanyItem = (item: TreeNode, isExpanded: boolean, isSelected: boolean) => {
-  const nodeType = determineElementType(item)
-  const Icon = iconMap[nodeType]
-  const isNodeComponent = nodeType === 'component'
-  const isOperating = item.status === Status.OPERATING
-  const isAlert = item.status === Status.ALERT
-  const isEnergySensor = item.sensorType === Sensor.ENERGY
-
-  return (
-    <div
-      className={mergeClasses('ps-5 my-4', {
-        'cursor-pointer': (item.children && item.children?.length > 0) || isNodeComponent,
-      })}
-    >
-      <div
-        className={mergeClasses('ps-1 flex items-center gap-2', {
-          'bg-blue-500 text-white': isNodeComponent && isSelected,
-        })}
-      >
-        {item.children && item.children?.length > 0 && (
-          <AiOutlineDown size={10} className={mergeClasses('', { 'rotate-180': isExpanded })} />
-        )}
-        <Icon className={mergeClasses('text-blue-500', { 'text-white': isSelected && isNodeComponent })} size={22} />
-        <span
-          className={mergeClasses(
-            'uppercase after:content=[" "] after:inline-block after:w-2 after:h-2 after:rounded after:ms-2',
-            {
-              'after:bg-green-500': isOperating,
-              'after:bg-red-500': isAlert,
-              'after:content-none': isEnergySensor,
-            }
-          )}
-        >
-          {item.name}
-        </span>
-        {isEnergySensor && <FaBolt className="text-green-500" />}
-      </div>
-    </div>
-  )
 }
 
 export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
