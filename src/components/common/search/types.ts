@@ -1,5 +1,4 @@
-export interface SearchBarProps {
+export interface SearchProps {
   value: string
-  placeholder?: string
-  onSearch: (value: string) => void
+  handleSearch: (value: string) => void
 }

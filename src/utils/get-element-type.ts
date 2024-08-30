@@ -1,39 +1,15 @@
-import { CompanyEntity } from './compose-tree'
+import { TreeNode } from './compose-tree'
 
-export type HierarchyElementType = 'facility' | 'area' | 'equipment' | 'sensor'
+export type NodeType = 'location' | 'sub-location' | 'asset' | 'component'
 
-export const determineElementType = (element: CompanyEntity): HierarchyElementType => {
-  if (isSensor(element)) {
-    return 'sensor'
-  }
+export const determineElementType = (node: TreeNode): NodeType => {
+  const { parentId, sensorType } = node
 
-  if (isEquipment(element)) {
-    return 'equipment'
-  }
+  if (sensorType) return 'component'
 
-  if (isArea(element)) {
-    return 'area'
-  }
+  if (sensorType === null) return 'asset'
 
-  if (isFacility(element)) {
-    return 'facility'
-  }
+  if (parentId) return 'sub-location'
 
-  throw new Error(`Unable to determine element type for: ${JSON.stringify(element)}`)
-}
-
-const isSensor = (element: CompanyEntity): boolean => {
-  return element.sensorType !== undefined
-}
-
-const isEquipment = (element: CompanyEntity): boolean => {
-  return element.sensorType === undefined && element.status !== undefined
-}
-
-const isArea = (element: CompanyEntity): boolean => {
-  return element.parentId !== null
-}
-
-const isFacility = (element: CompanyEntity): boolean => {
-  return element.parentId === null
+  return 'location'
 }

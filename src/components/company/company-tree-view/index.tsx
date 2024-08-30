@@ -1,67 +1,73 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
-import { FaBolt } from 'react-icons/fa6'
 import { GoLocation } from 'react-icons/go'
 import { IoCubeOutline } from 'react-icons/io5'
-import { CompanyEntity } from '../../../utils/compose-tree'
-import { Sensor, Status } from '../../../types'
+import { TreeNode } from '../../../utils/compose-tree'
 import { Filter } from '../../../context/type'
 import { determineElementType } from '../../../utils/get-element-type'
 import { mergeClasses } from '../../../utils/merge-classes'
-import { VirtualizedTreeView } from '../../ui/virtualized-tree-view'
-import { CompanyTreeViewProps, TreeNodeItemProps } from './types'
+import { FaBolt } from 'react-icons/fa6'
+import { CompanyTreeViewProps } from './types'
+import { useCallback, useEffect, useState } from 'react'
+import { TreeView } from '../../ui/tree-view'
+import { Sensor, Status } from '../../../types'
 
-const NODE_TYPE_ICON_MAP = {
-  facility: GoLocation,
-  equipment: IoCubeOutline,
-  sensor: AiOutlineCodepen,
-  area: GoLocation,
+const iconMap = {
+  location: GoLocation,
+  'sub-location': GoLocation,
+  asset: IoCubeOutline,
+  component: AiOutlineCodepen,
 }
 
-const getAncestorIds = (node: CompanyEntity, treeMap: Map<string, CompanyEntity>): string[] => {
-  const ancestorIds = []
-  let currentNode = node
-  while (currentNode.parentId) {
-    currentNode = treeMap.get(currentNode.parentId) as CompanyEntity
-    if (currentNode) {
-      ancestorIds.unshift(currentNode.id)
+const getParents = (node: TreeNode, treeMap: Map<string, TreeNode>) => {
+  const parents = []
+  let current = node
+  while (current.parentId) {
+    current = treeMap.get(current.parentId) as TreeNode
+    if (current) {
+      parents.unshift(current.id)
     } else {
       break
     }
   }
-  return ancestorIds
+  return parents
 }
 
-const isNodeMatchingFilter = (node: CompanyEntity, activeFilter: Filter | null, searchTerm: string): boolean => {
+const matchFilter = (node: TreeNode, activeFilter: Filter | null, search: string): boolean => {
   const isCriticalFilter = activeFilter === Filter.CRITICAL
   const isEnergySensorFilter = activeFilter === Filter.ENERGY_SENSOR
 
-  const matchesEnergySensor = isEnergySensorFilter && node.sensorType === Sensor.ENERGY
-  const matchesCriticalFilter = isCriticalFilter && node.status === Status.ALERT && node.sensorType !== Sensor.ENERGY
-  const matchesSearch = node.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const matchEnergySensor = isEnergySensorFilter && node.sensorType === Sensor.ENERGY
+  const matchCriticalFilter = isCriticalFilter && node.status === Status.ALERT && node.sensorType !== Sensor.ENERGY
+  const matchSearch = node.name.toLowerCase().includes(search.toLowerCase())
 
-  return matchesEnergySensor || matchesCriticalFilter || matchesSearch
+  return matchEnergySensor || matchCriticalFilter || matchSearch
 }
 
-const TreeNodeItem = React.memo(({ node, isExpanded, isSelected }: TreeNodeItemProps) => {
-  const nodeType = determineElementType(node)
-  const Icon = NODE_TYPE_ICON_MAP[nodeType]
+const renderCompanyItem = (item: TreeNode, isExpanded: boolean, isSelected: boolean) => {
+  const nodeType = determineElementType(item)
 
-  const isComponent = nodeType === 'sensor'
-  const isOperating = node.status === Status.OPERATING
-  const isAlert = node.status === Status.ALERT
-  const isEnergySensor = node.sensorType === Sensor.ENERGY
-  const hasChildren = node.children && node.children.length > 0
+  const Icon = iconMap[nodeType]
+
+  const isNodeComponent = nodeType === 'component'
+  const isOperating = item.status === Status.OPERATING
+  const isAlert = item.status === Status.ALERT
+  const isEnergySensor = item.sensorType === Sensor.ENERGY
 
   return (
-    <div className={mergeClasses('ps-5 my-4', { 'cursor-pointer': hasChildren || isComponent })}>
+    <div
+      className={mergeClasses('ps-5 my-4', {
+        'cursor-pointer': (item.children && item.children?.length > 0) || isNodeComponent,
+      })}
+    >
       <div
         className={mergeClasses('ps-1 flex items-center gap-2', {
-          'bg-blue-500 text-white': isComponent && isSelected,
+          'bg-blue-500 text-white': isNodeComponent && isSelected,
         })}
       >
-        {hasChildren && <AiOutlineDown size={10} className={mergeClasses('', { 'rotate-180': isExpanded })} />}
-        <Icon className={mergeClasses('text-blue-500', { 'text-white': isSelected && isComponent })} size={22} />
+        {item.children && item.children?.length > 0 && (
+          <AiOutlineDown size={10} className={mergeClasses('', { 'rotate-180': isExpanded })} />
+        )}
+        <Icon className={mergeClasses('text-blue-500', { 'text-white': isSelected && isNodeComponent })} size={22} />
         <span
           className={mergeClasses(
             'uppercase after:content=[" "] after:inline-block after:w-2 after:h-2 after:rounded after:ms-2',
@@ -72,22 +78,22 @@ const TreeNodeItem = React.memo(({ node, isExpanded, isSelected }: TreeNodeItemP
             }
           )}
         >
-          {node.name}
+          {item.name}
         </span>
         {isEnergySensor && <FaBolt className="text-green-500" />}
       </div>
     </div>
   )
-})
+}
 
-const CompanyTreeView = ({ data, onAssetSelect, searchTerm, activeFilter, nodeMap }: CompanyTreeViewProps) => {
-  const [expandedNodeIds, setExpandedNodeIds] = useState<Set<string>>(new Set())
+export const CompanyTreeView = ({ data, onClickAsset, search, activeFilter, nodes }: CompanyTreeViewProps) => {
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
-  const handleNodeToggle = useCallback(
-    (node: CompanyEntity) => {
-      const isComponent = determineElementType(node) === 'sensor'
+  const handleToggle = useCallback(
+    (node: TreeNode, isComponentType: boolean) => {
+      const { id, name, locationId, sensorType, status, parentId, gatewayId, sensorId } = node
 
-      setExpandedNodeIds((prevExpanded) => {
+      setExpandedItems((prevExpanded) => {
         const newExpanded = new Set(prevExpanded)
         if (newExpanded.has(node.id)) {
           newExpanded.delete(node.id)
@@ -96,54 +102,42 @@ const CompanyTreeView = ({ data, onAssetSelect, searchTerm, activeFilter, nodeMa
         }
         return newExpanded
       })
-
-      if (isComponent) {
-        const { id, name, locationId, sensorType, status, parentId, gatewayId, sensorId } = node
-        onAssetSelect({ id, name, locationId: locationId ?? null, sensorType, status, parentId, gatewayId, sensorId })
+      if (isComponentType) {
+        onClickAsset({ id, name, locationId: locationId!, sensorType, status, parentId, gatewayId, sensorId })
       }
     },
-    [onAssetSelect]
+    [onClickAsset]
   )
 
-  const expandedNodesBasedOnFilter = useMemo(() => {
-    const nodesToExpand = new Set<string>()
-    if (searchTerm || activeFilter) {
-      nodeMap.forEach((node) => {
-        if (isNodeMatchingFilter(node, activeFilter, searchTerm)) {
-          const ancestorIds = getAncestorIds(node, nodeMap)
-          ancestorIds.forEach((id) => nodesToExpand.add(id))
+  useEffect(() => {
+    const nodesToExpand = new Set() as Set<string>
+    if (search || activeFilter) {
+      nodes.forEach((node) => {
+        const nodeMatchesFilter = matchFilter(node, activeFilter, search)
+        if (nodeMatchesFilter) {
+          const ancestors = getParents(node, nodes)
+
+          ancestors.forEach((id) => nodesToExpand.add(id))
+
           nodesToExpand.add(node.id)
         }
       })
 
-      nodeMap.forEach((node) => {
-        if (node.children?.some((child: CompanyEntity) => nodesToExpand.has(child.id))) {
+      nodes.forEach((node) => {
+        if (node.children && node.children.some((child: TreeNode) => nodesToExpand.has(child.id))) {
           nodesToExpand.add(node.id)
         }
       })
     }
-    return nodesToExpand
-  }, [searchTerm, nodeMap, activeFilter])
-
-  useEffect(() => {
-    setExpandedNodeIds(expandedNodesBasedOnFilter)
-  }, [expandedNodesBasedOnFilter])
-
-  const renderItem = useCallback(
-    (node: CompanyEntity, isExpanded: boolean, isSelected: boolean) => (
-      <TreeNodeItem node={node} isExpanded={isExpanded} isSelected={isSelected} />
-    ),
-    []
-  )
+    setExpandedItems(nodesToExpand)
+  }, [search, nodes, activeFilter])
 
   return (
-    <VirtualizedTreeView
+    <TreeView<TreeNode>
       items={data}
-      expandedItems={expandedNodeIds}
-      onItemSelect={handleNodeToggle}
-      renderItem={renderItem}
+      expandedItems={expandedItems}
+      onItemSelect={(item) => handleToggle(item, determineElementType(item) === 'component')}
+      renderItem={renderCompanyItem}
     />
   )
 }
-
-export default React.memo(CompanyTreeView)

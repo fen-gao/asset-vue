@@ -1,10 +1,10 @@
 import { CompanyList } from '../../company/company-list'
-import { HeaderProps } from './types'
+import Logo from '../../../assets/logo.png'
 
-export const Header = ({ logoSrc, logoAlt }: HeaderProps) => {
+export const Header = () => {
   return (
-    <header className="w-full h-12 flex items-center justify-between px-4 py-3 bg-main">
-      <img src={logoSrc} alt={logoAlt} className="h-full object-contain" />
+    <header className="bg-main w-full h-12 flex items-center justify-between px-4 py-3">
+      <img src={Logo} alt="Tractian Logo" />
       <CompanyList />
     </header>
   )

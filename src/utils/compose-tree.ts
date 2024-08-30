@@ -1,68 +1,54 @@
 import { Asset, Location, SensorType, Status } from '../types'
 
-export interface CompanyEntity {
+export interface TreeNode {
   id: string
   name: string
   level?: number
   parentId: string | null
   locationId?: string | null
-  children?: CompanyEntity[]
+  children?: TreeNode[]
   sensorType?: SensorType
   status?: Status | null
   gatewayId?: string | null
   sensorId?: string | null
 }
 
-interface HierarchyStructure {
-  roots: CompanyEntity[]
-  entityLookup: Map<string, CompanyEntity>
-}
-
-const linkEntityToParent = (
-  entity: CompanyEntity,
+const addNodeToParent = (
+  node: TreeNode,
   parentId: string | null,
-  entityIndex: Map<string, CompanyEntity>,
-  topLevelEntities: CompanyEntity[]
-): void => {
+  nodesById: Map<string, TreeNode>,
+  rootNodes: TreeNode[]
+) => {
   if (parentId === null) {
-    topLevelEntities.push(entity)
-    return
-  }
-
-  const parentEntity = entityIndex.get(parentId)
-  if (parentEntity) {
-    parentEntity.children = parentEntity.children || []
-    parentEntity.children.push(entity)
+    rootNodes.push(node)
   } else {
-    topLevelEntities.push(entity)
+    const parent = nodesById.get(parentId)
+    if (parent) {
+      if (!parent.children) {
+        parent.children = []
+      }
+      parent.children.push(node)
+    } else {
+      rootNodes.push(node)
+    }
   }
 }
 
-const createEntityNode = (source: Location | Asset): CompanyEntity => ({
-  ...source,
-  children: undefined,
-})
+export default function buildCompanyTree(locations: Location[], assets: Asset[]) {
+  const nodesById = new Map<string, TreeNode>()
+  const rootNodes: TreeNode[] = []
 
-/**
- * Constructs a company hierarchy from a list of locations and assets.
- *
- * @param {Location[]} locations - The list of locations to include in the hierarchy.
- * @param {Asset[]} assets - The list of assets to include in the hierarchy.
- * @return {HierarchyStructure} An object containing the roots of the hierarchy and a lookup map of entities.
- */
-export const constructCompanyHierarchy = (locations: Location[], assets: Asset[]): HierarchyStructure => {
-  const entityIndex = new Map<string, CompanyEntity>()
-  const topLevelEntities: CompanyEntity[] = []
-
-  const processCompanyEntity = (item: Location | Asset) => {
-    const entityNode = createEntityNode(item)
-    entityIndex.set(entityNode.id, entityNode)
-    const parentId = 'locationId' in item ? item.locationId || item.parentId || null : item.parentId
-    linkEntityToParent(entityNode, parentId, entityIndex, topLevelEntities)
+  for (const location of locations) {
+    const locNode: TreeNode = { ...location }
+    nodesById.set(locNode.id, locNode)
+    addNodeToParent(locNode, locNode.parentId, nodesById, rootNodes)
   }
 
-  locations.forEach(processCompanyEntity)
-  assets.forEach(processCompanyEntity)
+  for (const asset of assets) {
+    const assetNode: TreeNode = { ...asset }
+    nodesById.set(assetNode.id, assetNode)
+    addNodeToParent(assetNode, asset.locationId || asset.parentId || null, nodesById, rootNodes)
+  }
 
-  return { roots: topLevelEntities, entityLookup: entityIndex }
+  return { tree: rootNodes, map: nodesById }
 }

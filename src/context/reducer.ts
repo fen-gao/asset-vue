@@ -29,7 +29,7 @@ export const INITIAL_STATE = {
   activeAsset: null,
 }
 
-export const reducer = (state: UnitDataState, action: Action): UnitDataState => {
+const reducer = (state: UnitDataState, action: Action): UnitDataState => {
   switch (action.type) {
     case ActionTypes.SET_ACTIVE_UNIT:
       return { ...state, activeCompany: action.payload }
@@ -43,3 +43,5 @@ export const reducer = (state: UnitDataState, action: Action): UnitDataState => 
       return state
   }
 }
+
+export default reducer

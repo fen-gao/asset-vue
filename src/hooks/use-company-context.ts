@@ -5,7 +5,7 @@ export const useCompanyContext = () => {
   const context = useContext(CompanyContext)
 
   if (!context) {
-    throw new Error('The useCompanyContext hook requires a CompanyContextProvider ancestor in the component tree.')
+    throw new Error('useCompanyContext must be used within a CompanyContextProvider!')
   }
 
   return context
