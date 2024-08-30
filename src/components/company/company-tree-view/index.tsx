@@ -1,15 +1,15 @@
+import React, { useCallback, useEffect, useState, useMemo } from 'react'
 import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
 import { GoLocation } from 'react-icons/go'
 import { IoCubeOutline } from 'react-icons/io5'
 import { TreeNode } from '../../../utils/compose-tree'
-import { Filter } from '../../../context/type'
 import { determineElementType } from '../../../utils/get-element-type'
 import { mergeClasses } from '../../../utils/merge-classes'
 import { FaBolt } from 'react-icons/fa6'
 import { CompanyTreeViewProps } from './types'
-import { useCallback, useEffect, useState } from 'react'
-import { TreeView } from '../../ui/tree-view'
 import { Sensor, Status } from '../../../types'
+import TreeView from '../../common/tree-view'
+import { Filter } from '../../../context/type'
 
 const iconMap = {
   location: GoLocation,
@@ -45,9 +45,7 @@ const matchFilter = (node: TreeNode, activeFilter: Filter | null, search: string
 
 const renderCompanyItem = (item: TreeNode, isExpanded: boolean, isSelected: boolean) => {
   const nodeType = determineElementType(item)
-
   const Icon = iconMap[nodeType]
-
   const isNodeComponent = nodeType === 'component'
   const isOperating = item.status === Status.OPERATING
   const isAlert = item.status === Status.ALERT
@@ -86,12 +84,19 @@ const renderCompanyItem = (item: TreeNode, isExpanded: boolean, isSelected: bool
   )
 }
 
-export const CompanyTreeView = ({ data, onClickAsset, search, activeFilter, nodes }: CompanyTreeViewProps) => {
+export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
+  data,
+  onClickAsset,
+  search,
+  activeFilter,
+  nodes,
+}) => {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   const handleToggle = useCallback(
-    (node: TreeNode, isComponentType: boolean) => {
+    (node: TreeNode) => {
       const { id, name, locationId, sensorType, status, parentId, gatewayId, sensorId } = node
+      const isComponentType = determineElementType(node) === 'component'
 
       setExpandedItems((prevExpanded) => {
         const newExpanded = new Set(prevExpanded)
@@ -110,15 +115,13 @@ export const CompanyTreeView = ({ data, onClickAsset, search, activeFilter, node
   )
 
   useEffect(() => {
-    const nodesToExpand = new Set() as Set<string>
+    const nodesToExpand = new Set<string>()
     if (search || activeFilter) {
       nodes.forEach((node) => {
         const nodeMatchesFilter = matchFilter(node, activeFilter, search)
         if (nodeMatchesFilter) {
           const ancestors = getParents(node, nodes)
-
           ancestors.forEach((id) => nodesToExpand.add(id))
-
           nodesToExpand.add(node.id)
         }
       })
@@ -132,12 +135,26 @@ export const CompanyTreeView = ({ data, onClickAsset, search, activeFilter, node
     setExpandedItems(nodesToExpand)
   }, [search, nodes, activeFilter])
 
+  const flattenedData = useMemo(() => {
+    const flatten = (items: TreeNode[], depth = 0): TreeNode[] => {
+      return items.reduce((acc: TreeNode[], item) => {
+        const newItem = { ...item, depth }
+        acc.push(newItem)
+        if (item.children && expandedItems.has(item.id)) {
+          acc.push(...flatten(item.children, depth + 1))
+        }
+        return acc
+      }, [])
+    }
+    return flatten(data)
+  }, [data, expandedItems])
+
   return (
-    <TreeView<TreeNode>
-      items={data}
-      expandedItems={expandedItems}
-      onItemSelect={(item) => handleToggle(item, determineElementType(item) === 'component')}
-      renderItem={renderCompanyItem}
+    <TreeView
+      data={flattenedData}
+      activeAsset={null} // You might want to pass this as a prop if needed
+      onClickAsset={handleToggle}
+      expandedNodes={expandedItems}
     />
   )
 }

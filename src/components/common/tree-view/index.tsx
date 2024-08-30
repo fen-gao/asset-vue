@@ -1,15 +1,32 @@
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { FixedSizeList as List } from 'react-window'
-import { KeyboardEvent } from 'react'
-
+import AutoSizer from 'react-virtualized-auto-sizer'
 import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
 import { FaBolt } from 'react-icons/fa6'
 import { GoLocation } from 'react-icons/go'
 import { IoCubeOutline } from 'react-icons/io5'
-
+import { TreeNode } from '../../../utils/compose-tree'
+import { Asset, SensorType, Status } from '../../../types'
 import { determineElementType, NodeType } from '../../../utils/get-element-type'
-import { NodeLabelProps, NodeProps, ThreeViewProps } from './types'
 import { mergeClasses } from '../../../utils/merge-classes'
+
+interface ThreeViewProps {
+  data: Array<TreeNode>
+  onClickAsset: (nextAsset: TreeNode, isComponentType: boolean) => void
+  activeAsset: Asset | null
+  expandedNodes: Set<string>
+}
+
+interface NodeLabelProps {
+  nodeType: NodeType
+  hasChildren: boolean
+  isCollapsed: boolean
+  handleSelect: () => void
+  labelValue: string
+  sensorType?: SensorType
+  status?: Status | null
+  isSelectedComponent: boolean
+}
 
 const getIconByNodeType = (typeNode: NodeType) => {
   const availableIcons = {
@@ -18,11 +35,10 @@ const getIconByNodeType = (typeNode: NodeType) => {
     asset: IoCubeOutline,
     component: AiOutlineCodepen,
   }
-
   return availableIcons[typeNode]
 }
 
-const NodeLabel = ({
+const NodeLabel: React.FC<NodeLabelProps> = ({
   handleSelect,
   hasChildren,
   isCollapsed,
@@ -31,17 +47,11 @@ const NodeLabel = ({
   sensorType,
   status,
   isSelectedComponent,
-}: NodeLabelProps) => {
+}) => {
   const isNodeComponent = nodeType === 'component'
   const isOperating = status === 'operating'
   const isAlert = status === 'alert'
   const isEnergySensor = sensorType === 'energy'
-
-  const handleKeyPress = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter') {
-      handleSelect()
-    }
-  }
 
   const Icon = getIconByNodeType(nodeType)
 
@@ -55,7 +65,11 @@ const NodeLabel = ({
         event.stopPropagation()
         handleSelect()
       }}
-      onKeyDown={handleKeyPress}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          handleSelect()
+        }
+      }}
     >
       <div
         className={mergeClasses('ps-1 flex items-center gap-2', {
@@ -94,73 +108,66 @@ const NodeLabel = ({
   )
 }
 
-const Node = ({ node, activeAsset, onClickAsset, expandedNodes }: NodeProps) => {
-  const { name, children, sensorType, status } = node
+const TreeView: React.FC<ThreeViewProps> = ({ data, activeAsset, onClickAsset, expandedNodes }) => {
+  const flattenedData = useMemo(() => {
+    const flatten = (nodes: TreeNode[], depth = 0): { node: TreeNode; depth: number }[] => {
+      return nodes.reduce((acc, node) => {
+        acc.push({ node, depth })
+        if (node.children && node.children.length > 0 && expandedNodes.has(node.id)) {
+          acc.push(...flatten(node.children, depth + 1))
+        }
+        return acc
+      }, [] as { node: TreeNode; depth: number }[])
+    }
+    return flatten(data)
+  }, [data, expandedNodes])
 
-  const nodeType = determineElementType(node)
+  const renderRow = useCallback(
+    ({ index, style }: { index: number; style: React.CSSProperties }) => {
+      const { node, depth } = flattenedData[index]
+      const { name, children, sensorType, status } = node
+      const nodeType = determineElementType(node)
+      const hasChildren = !!children && children.length > 0
+      const isExpanded = expandedNodes.has(node.id)
+      const isComponentType = nodeType === 'component'
+      const isSelectedComponent = activeAsset?.id === node.id && isComponentType
 
-  const hasChildren = !!children && children.length > 0
+      const handleSelect = () => {
+        onClickAsset(node, isComponentType)
+      }
 
-  const isExpanded = expandedNodes.has(node.id)
-
-  const isComponentType = nodeType === 'component'
-
-  const isSelectedComponent = activeAsset?.id === node.id && isComponentType
-
-  const handleSelect = () => {
-    onClickAsset(node, isComponentType)
-  }
+      return (
+        <div style={{ ...style, paddingLeft: `${depth * 20}px` }}>
+          <NodeLabel
+            handleSelect={handleSelect}
+            labelValue={name}
+            hasChildren={hasChildren}
+            isCollapsed={isExpanded}
+            nodeType={nodeType}
+            sensorType={sensorType}
+            status={status}
+            isSelectedComponent={isSelectedComponent}
+          />
+        </div>
+      )
+    },
+    [flattenedData, expandedNodes, activeAsset, onClickAsset]
+  )
 
   return (
-    <div>
-      <NodeLabel
-        handleSelect={handleSelect}
-        labelValue={name}
-        hasChildren={hasChildren}
-        isCollapsed={isExpanded}
-        nodeType={nodeType}
-        sensorType={sensorType}
-        status={status}
-        isSelectedComponent={isSelectedComponent}
-      />
-      {hasChildren && (
-        <ul
-          className={mergeClasses('block ml-[1.5rem] ps-5', {
-            hidden: !isExpanded,
-            'border-l border-card': hasChildren,
-          })}
+    <AutoSizer>
+      {({ height, width }) => (
+        <List
+          height={height}
+          itemCount={flattenedData.length}
+          itemSize={50} // Adjust this value based on your average item height
+          width={width}
         >
-          {children.map((row) => (
-            <Node
-              key={row.id}
-              node={row}
-              onClickAsset={onClickAsset}
-              activeAsset={activeAsset}
-              expandedNodes={expandedNodes}
-            />
-          ))}
-        </ul>
+          {renderRow}
+        </List>
       )}
-    </div>
+    </AutoSizer>
   )
 }
 
-export const TreeView = ({ data, activeAsset, onClickAsset, expandedNodes }: ThreeViewProps) => {
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => (
-    <div style={style}>
-      <Node
-        key={data[index].id}
-        node={data[index]}
-        onClickAsset={onClickAsset}
-        activeAsset={activeAsset}
-        expandedNodes={expandedNodes}
-      />
-    </div>
-  )
-
-  return (
-    <List height={600} itemCount={data.length} itemSize={50} width="100%">
-      {Row}
-    </List>
-  )
-}
+export default TreeView
