@@ -1,16 +1,16 @@
 import { Asset, SensorType, Status } from '../../../types'
-import { TreeNode } from '../../../utils/compose-tree'
-import { NodeType } from '../../../utils/get-element-type'
+import { SensorTreeNode } from '../../../utils/compose-tree'
+import { ElementType } from '../../../utils/get-element-type'
 
 export interface ThreeViewProps {
-  data: Array<TreeNode>
-  onClickAsset: (nextAsset: TreeNode, isComponentType: boolean) => void
+  data: Array<SensorTreeNode>
+  onClickAsset: (nextAsset: SensorTreeNode, isComponentType: boolean) => void
   activeAsset: Asset | null
   expandedNodes: Set<string>
 }
 
 export interface NodeLabelProps {
-  nodeType: NodeType
+  ElementType: ElementType
   hasChildren: boolean
   isCollapsed: boolean
   handleSelect: () => void
@@ -21,8 +21,8 @@ export interface NodeLabelProps {
 }
 
 export interface NodeProps {
-  node: TreeNode
-  onClickAsset: (nextAsset: TreeNode, isComponentType: boolean) => void
+  node: SensorTreeNode
+  onClickAsset: (nextAsset: SensorTreeNode, isComponentType: boolean) => void
   activeAsset: Asset | null
   expandedNodes: Set<string>
 }

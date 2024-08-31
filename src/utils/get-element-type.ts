@@ -1,8 +1,8 @@
-import { TreeNode } from './compose-tree'
+import { SensorTreeNode } from './compose-tree'
 
-export type NodeType = 'location' | 'sub-location' | 'asset' | 'component'
+export type ElementType = 'location' | 'sub-location' | 'asset' | 'component'
 
-export const determineElementType = (node: TreeNode): NodeType => {
+export const determineElementType = (node: SensorTreeNode): ElementType => {
   const { parentId, sensorType } = node
 
   if (sensorType) return 'component'

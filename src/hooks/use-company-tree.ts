@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { getAssets, getLocations } from '../service/api'
 import { useEffect, useMemo, useState } from 'react'
 
-import buildCompanyTree, { TreeNode } from '../utils/compose-tree'
+import { SensorTreeNode, createLocationAssetHierarchy } from '../utils/compose-tree'
 import { Company, FilterType } from '../context/type'
-import filterCompanyTree from '../utils/filter-tree'
+import { processTreeWithCriteria } from '../utils/filter-tree'
 
 interface UseCompanyTreeProps {
   activeCompany: Company | null
@@ -13,12 +13,12 @@ interface UseCompanyTreeProps {
 }
 
 interface CompanyTree {
-  tree: TreeNode[]
-  map: Map<string, TreeNode>
+  tree: SensorTreeNode[]
+  map: Map<string, SensorTreeNode>
 }
 
 export const useCompanyTree = ({ activeCompany, activeFilter, search }: UseCompanyTreeProps) => {
-  const [companyTree, setCompanyTree] = useState<CompanyTree>({ tree: [], map: new Map<string, TreeNode>() })
+  const [companyTree, setCompanyTree] = useState<CompanyTree>({ tree: [], map: new Map<string, SensorTreeNode>() })
 
   const { data: assets, isLoading: isLoadingAssets } = useQuery({
     queryKey: ['assets', activeCompany],
@@ -34,13 +34,13 @@ export const useCompanyTree = ({ activeCompany, activeFilter, search }: UseCompa
 
   useEffect(() => {
     if (assets && locations) {
-      const buildedTree = buildCompanyTree(locations, assets)
+      const buildedTree = createLocationAssetHierarchy(locations, assets)
       setCompanyTree(buildedTree)
     }
   }, [assets, locations])
 
   const listUnitsFiltered = useMemo(
-    () => filterCompanyTree(companyTree.tree, { search, activeFilter }),
+    () => processTreeWithCriteria(companyTree.tree, { search, activeFilter }),
     [search, activeFilter, companyTree]
   )
 

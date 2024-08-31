@@ -1,22 +1,9 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { FixedSizeList as List } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
+import { TreeItem, TreeViewProps } from './types'
 
-export interface TreeItem {
-  id: string
-  name: string
-  children?: TreeItem[]
-  [key: string]: any
-}
-
-interface TreeViewProps<T extends TreeItem> {
-  items: T[]
-  expandedItems: Set<string>
-  onItemSelect?: (item: T) => void
-  renderItem: (item: T, isExpanded: boolean, isSelected: boolean) => React.ReactNode
-}
-
-function TreeView<T extends TreeItem>({ items, expandedItems, onItemSelect, renderItem }: TreeViewProps<T>) {
+export const TreeView = <T extends TreeItem>({ items, expandedItems, onItemSelect, renderItem }: TreeViewProps<T>) => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
 
   const handleItemSelect = useCallback(
@@ -72,5 +59,3 @@ function TreeView<T extends TreeItem>({ items, expandedItems, onItemSelect, rend
     </AutoSizer>
   )
 }
-
-export default TreeView

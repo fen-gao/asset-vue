@@ -2,6 +2,7 @@ import { MdOutlineRouter, MdWifiTethering } from 'react-icons/md'
 import { useCompanyContext } from '../../../hooks/use-company-context'
 import { mergeClasses } from '../../../utils/merge-classes'
 import ProductImage from '../../../assets/product-image.png'
+
 export const ComponentData = () => {
   const { activeAsset } = useCompanyContext()
   return (
