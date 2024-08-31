@@ -8,9 +8,37 @@ import { ComponentData } from '../component-data'
 export const CompanyContent = () => {
   const { activeCompany, activeFilter, search, activeAsset, handleSearch, handleActiveAsset } = useCompanyContext()
 
-  const { companyNodes, companyRoot, isLoading } = useCompanyTree({ activeCompany, activeFilter, search })
+  const { companyNodes, companyRoot, isLoading } = useCompanyTree({
+    activeCompany,
+    activeFilter,
+    search,
+  })
 
   const hasData = !!companyRoot.length
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <span className="text-gray-600 text-sm block text-center mt-4">Carregando...</span>
+    }
+    if (hasData) {
+      return (
+        <CompanyTreeView
+          search={search}
+          activeFilter={activeFilter}
+          nodes={companyNodes}
+          data={companyRoot}
+          onClickAsset={handleActiveAsset}
+          activeAsset={activeAsset}
+        />
+      )
+    }
+    return (
+      <span className="text-gray-600 text-sm block text-center mt-4">
+        Nenhum Ativo ou Local encontrado! <br />
+        Limpe a pesquisa ou os filtros para ver os items disponíveis.
+      </span>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-3 h-full bg-white border rounded border-card px-4 py-[18px] overflow-hidden">
@@ -24,24 +52,7 @@ export const CompanyContent = () => {
       <main className="flex-1 flex flex-col lg:flex-row gap-2 overflow-hidden">
         <section className="flex flex-col border rounded border-card min-h-[500px] w-full lg:w-[450px] lg:min-h-0 overflow-hidden">
           <Search value={search} handleSearch={handleSearch} />
-          <div className="flex-1">
-            {isLoading ? (
-              <span className="text-gray-600 text-sm block text-center mt-4">Carregando...</span>
-            ) : hasData ? (
-              <CompanyTreeView
-                search={search}
-                activeFilter={activeFilter}
-                nodes={companyNodes}
-                data={companyRoot}
-                onClickAsset={handleActiveAsset}
-                activeAsset={activeAsset}
-              />
-            ) : (
-              <span className="text-gray-600 text-sm block text-center mt-4">
-                Nenhum Ativo ou Local encontrado! <br /> Limpe a pesquisa ou os filtros para ver os items disponíveis.
-              </span>
-            )}
-          </div>
+          <div className="flex-1">{renderContent()}</div>
         </section>
         <div className="flex-1 overflow-hidden">
           <ComponentData />
