@@ -29,15 +29,13 @@ const fetchWithCache = async <T>(url: string, ttl = 60000): Promise<T> => {
   }
 }
 
-export const getCompanies = memoize((): Promise<Company[]> => fetchWithCache('/companies'))
+export const getCompanies = memoize(() => fetchWithCache<Company[]>('/companies'))
 
-export const getLocations = memoize(
-  (companyId: string): Promise<Location[]> => fetchWithCache(`/companies/${companyId}/locations`)
+export const getLocations = memoize((companyId: string) =>
+  fetchWithCache<Location[]>(`/companies/${companyId}/locations`)
 )
 
-export const getAssets = memoize(
-  (companyId: string): Promise<Asset[]> => fetchWithCache(`/companies/${companyId}/assets`)
-)
+export const getAssets = memoize((companyId: string) => fetchWithCache<Asset[]>(`/companies/${companyId}/assets`))
 
 export const getCompanyData = async (companyId: string) => {
   try {

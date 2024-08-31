@@ -1,13 +1,7 @@
 import { Suspense } from 'react'
 import { CompanyContent } from './components/company/company-content'
-import { Loading } from './components/ui/loading'
 import { Header } from './components/common/header'
-
-const FallBackLoading = () => (
-  <div className="w-screen h-screen flex justify-center items-center">
-    <Loading />
-  </div>
-)
+import { FallBackLoading } from './components/fallback-loading'
 
 export const App = () => {
   return (
