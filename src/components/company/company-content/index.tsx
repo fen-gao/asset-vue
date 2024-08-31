@@ -61,5 +61,3 @@ export const CompanyContent = () => {
     </div>
   )
 }
-
-export default CompanyContent
