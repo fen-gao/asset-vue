@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { getAssets, getLocations } from '../service/api'
-import { useEffect, useMemo, useState } from 'react'
+import { getCompanyData } from '../service/api'
+import { useMemo, useCallback } from 'react'
 
 import { SensorTreeNode, createLocationAssetHierarchy } from '../utils/compose-tree'
 import { Company, FilterType } from '../context/type'
@@ -12,43 +12,30 @@ interface UseCompanyTreeProps {
   search: string
 }
 
-interface CompanyTree {
-  tree: SensorTreeNode[]
-  map: Map<string, SensorTreeNode>
-}
-
 export const useCompanyTree = ({ activeCompany, activeFilter, search }: UseCompanyTreeProps) => {
-  const [companyTree, setCompanyTree] = useState<CompanyTree>({ tree: [], map: new Map<string, SensorTreeNode>() })
-
-  const { data: assets, isLoading: isLoadingAssets } = useQuery({
-    queryKey: ['assets', activeCompany],
-    queryFn: () => getAssets(activeCompany!.id),
+  const { data: companyData, isLoading } = useQuery({
+    queryKey: ['companyData', activeCompany?.id],
+    queryFn: () => getCompanyData(activeCompany!.id),
     enabled: !!activeCompany,
   })
 
-  const { data: locations, isLoading: isLoadingLocations } = useQuery({
-    queryKey: ['locations', activeCompany],
-    queryFn: () => getLocations(activeCompany!.id),
-    enabled: !!activeCompany,
-  })
-
-  useEffect(() => {
-    if (assets && locations) {
-      const buildedTree = createLocationAssetHierarchy(locations, assets)
-      setCompanyTree(buildedTree)
+  const companyTree = useMemo(() => {
+    if (companyData) {
+      return createLocationAssetHierarchy(companyData.locations, companyData.assets)
     }
-  }, [assets, locations])
+    return { tree: [], map: new Map<string, SensorTreeNode>() }
+  }, [companyData])
 
-  const listUnitsFiltered = useMemo(
-    () => processTreeWithCriteria(companyTree.tree, { search, activeFilter }),
-    [search, activeFilter, companyTree]
+  const filterTree = useCallback(
+    (tree: SensorTreeNode[]) => processTreeWithCriteria(tree, { search, activeFilter }),
+    [search, activeFilter]
   )
 
-  const isLoading = isLoadingAssets || isLoadingLocations
+  const listUnitsFiltered = useMemo(() => filterTree(companyTree.tree), [filterTree, companyTree.tree])
 
   return {
     companyRoot: listUnitsFiltered,
-    companyNodes: companyTree?.map,
+    companyNodes: companyTree.map,
     isLoading,
   }
 }
