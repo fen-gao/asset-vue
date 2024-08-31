@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react'
-import { TreeNode } from '../../../utils/compose-tree'
+import { SensorTreeNode } from '../../../utils/compose-tree'
 import { determineElementType } from '../../../utils/get-element-type'
 import { CompanyTreeViewProps } from './types'
 import { Sensor, Status } from '../../../types'
-import TreeView from '../../common/tree-view'
+import { TreeView } from '../../common/tree-view'
 import { Filter } from '../../../context/type'
 
-const getParents = (node: TreeNode, treeMap: Map<string, TreeNode>) => {
+const getParents = (node: SensorTreeNode, treeMap: Map<string, SensorTreeNode>) => {
   const parents = []
   let current = node
   while (current.parentId) {
-    current = treeMap.get(current.parentId) as TreeNode
+    current = treeMap.get(current.parentId) as SensorTreeNode
     if (current) {
       parents.unshift(current.id)
     } else {
@@ -20,7 +20,7 @@ const getParents = (node: TreeNode, treeMap: Map<string, TreeNode>) => {
   return parents
 }
 
-const matchFilter = (node: TreeNode, activeFilter: Filter | null, search: string): boolean => {
+const matchFilter = (node: SensorTreeNode, activeFilter: Filter | null, search: string): boolean => {
   const isCriticalFilter = activeFilter === Filter.CRITICAL
   const isEnergySensorFilter = activeFilter === Filter.ENERGY_SENSOR
 
@@ -41,7 +41,7 @@ export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   const handleToggle = useCallback(
-    (node: TreeNode) => {
+    (node: SensorTreeNode) => {
       const { id, name, locationId, sensorType, status, parentId, gatewayId, sensorId } = node
       const isComponentType = determineElementType(node) === 'component'
 
@@ -74,7 +74,7 @@ export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
       })
 
       nodes.forEach((node) => {
-        if (node.children && node.children.some((child: TreeNode) => nodesToExpand.has(child.id))) {
+        if (node.children && node.children.some((child: SensorTreeNode) => nodesToExpand.has(child.id))) {
           nodesToExpand.add(node.id)
         }
       })
@@ -83,8 +83,8 @@ export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
   }, [search, nodes, activeFilter])
 
   const flattenedData = useMemo(() => {
-    const flatten = (items: TreeNode[], depth = 0): TreeNode[] => {
-      return items.reduce((acc: TreeNode[], item) => {
+    const flatten = (items: SensorTreeNode[], depth = 0): SensorTreeNode[] => {
+      return items.reduce((acc: SensorTreeNode[], item) => {
         const newItem = { ...item, depth }
         acc.push(newItem)
         if (item.children && expandedItems.has(item.id)) {

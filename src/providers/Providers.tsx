@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import UnitContextProvider from '../context/company-context'
+import { CompanyContextProvider } from '../context/company-context'
 import { useState } from 'react'
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export const Providers = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(
     new QueryClient({
       defaultOptions: {
@@ -15,7 +15,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <UnitContextProvider>{children}</UnitContextProvider>
+      <CompanyContextProvider>{children}</CompanyContextProvider>
     </QueryClientProvider>
   )
 }

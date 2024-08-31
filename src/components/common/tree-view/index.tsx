@@ -5,30 +5,12 @@ import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
 import { FaBolt } from 'react-icons/fa6'
 import { GoLocation } from 'react-icons/go'
 import { IoCubeOutline } from 'react-icons/io5'
-import { TreeNode } from '../../../utils/compose-tree'
-import { Asset, SensorType, Status } from '../../../types'
-import { determineElementType, NodeType } from '../../../utils/get-element-type'
+import { SensorTreeNode } from '../../../utils/compose-tree'
+import { determineElementType, ElementType } from '../../../utils/get-element-type'
 import { mergeClasses } from '../../../utils/merge-classes'
+import { NodeLabelProps, ThreeViewProps } from './types'
 
-interface ThreeViewProps {
-  data: Array<TreeNode>
-  onClickAsset: (nextAsset: TreeNode, isComponentType: boolean) => void
-  activeAsset: Asset | null
-  expandedNodes: Set<string>
-}
-
-interface NodeLabelProps {
-  nodeType: NodeType
-  hasChildren: boolean
-  isCollapsed: boolean
-  handleSelect: () => void
-  labelValue: string
-  sensorType?: SensorType
-  status?: Status | null
-  isSelectedComponent: boolean
-}
-
-const getIconByNodeType = (typeNode: NodeType) => {
+const getIconByElementType = (typeNode: ElementType) => {
   const availableIcons = {
     location: GoLocation,
     'sub-location': GoLocation,
@@ -43,17 +25,17 @@ const NodeLabel: React.FC<NodeLabelProps> = ({
   hasChildren,
   isCollapsed,
   labelValue,
-  nodeType,
+  ElementType,
   sensorType,
   status,
   isSelectedComponent,
 }) => {
-  const isNodeComponent = nodeType === 'component'
+  const isNodeComponent = ElementType === 'component'
   const isOperating = status === 'operating'
   const isAlert = status === 'alert'
   const isEnergySensor = sensorType === 'energy'
 
-  const Icon = getIconByNodeType(nodeType)
+  const Icon = getIconByElementType(ElementType)
 
   return (
     <div
@@ -108,16 +90,16 @@ const NodeLabel: React.FC<NodeLabelProps> = ({
   )
 }
 
-const TreeView: React.FC<ThreeViewProps> = ({ data, activeAsset, onClickAsset, expandedNodes }) => {
+export const TreeView = ({ data, activeAsset, onClickAsset, expandedNodes }: ThreeViewProps) => {
   const flattenedData = useMemo(() => {
-    const flatten = (nodes: TreeNode[], depth = 0): { node: TreeNode; depth: number }[] => {
+    const flatten = (nodes: SensorTreeNode[], depth = 0): { node: SensorTreeNode; depth: number }[] => {
       return nodes.reduce((acc, node) => {
         acc.push({ node, depth })
         if (node.children && node.children.length > 0 && expandedNodes.has(node.id)) {
           acc.push(...flatten(node.children, depth + 1))
         }
         return acc
-      }, [] as { node: TreeNode; depth: number }[])
+      }, [] as { node: SensorTreeNode; depth: number }[])
     }
     return flatten(data)
   }, [data, expandedNodes])
@@ -126,10 +108,10 @@ const TreeView: React.FC<ThreeViewProps> = ({ data, activeAsset, onClickAsset, e
     ({ index, style }: { index: number; style: React.CSSProperties }) => {
       const { node, depth } = flattenedData[index]
       const { name, children, sensorType, status } = node
-      const nodeType = determineElementType(node)
+      const ElementType = determineElementType(node)
       const hasChildren = !!children && children.length > 0
       const isExpanded = expandedNodes.has(node.id)
-      const isComponentType = nodeType === 'component'
+      const isComponentType = ElementType === 'component'
       const isSelectedComponent = activeAsset?.id === node.id && isComponentType
 
       const handleSelect = () => {
@@ -143,7 +125,7 @@ const TreeView: React.FC<ThreeViewProps> = ({ data, activeAsset, onClickAsset, e
             labelValue={name}
             hasChildren={hasChildren}
             isCollapsed={isExpanded}
-            nodeType={nodeType}
+            ElementType={ElementType}
             sensorType={sensorType}
             status={status}
             isSelectedComponent={isSelectedComponent}
@@ -169,5 +151,3 @@ const TreeView: React.FC<ThreeViewProps> = ({ data, activeAsset, onClickAsset, e
     </AutoSizer>
   )
 }
-
-export default TreeView
