@@ -7,7 +7,7 @@ export const ComponentData = () => {
   const { activeAsset } = useCompanyContext()
   return (
     <section
-      className={mergeClasses('flex-[2] border rounded border-card', {
+      className={mergeClasses('flex-[2] border rounded border-car h-full', {
         invisible: !activeAsset,
       })}
     >
