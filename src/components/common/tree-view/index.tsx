@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { FixedSizeList as List } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { AiOutlineCodepen, AiOutlineDown } from 'react-icons/ai'
@@ -29,6 +29,8 @@ const NodeLabel = ({
   sensorType,
   status,
   isSelectedComponent,
+  isClickable,
+  isCurrentlyClicked,
 }: NodeLabelProps) => {
   const isNodeComponent = ElementType === 'component'
   const isOperating = status === 'operating'
@@ -41,7 +43,7 @@ const NodeLabel = ({
     <div
       tabIndex={0}
       className={mergeClasses('ps-5 my-4', {
-        'cursor-pointer': hasChildren || isNodeComponent,
+        'cursor-pointer': hasChildren || isClickable,
       })}
       onClick={(event) => {
         event.stopPropagation()
@@ -55,7 +57,7 @@ const NodeLabel = ({
     >
       <div
         className={mergeClasses('ps-1 flex items-center gap-2', {
-          'bg-blue-500 text-white': isSelectedComponent,
+          'bg-blue-500 text-white': isSelectedComponent || isCurrentlyClicked,
         })}
       >
         {hasChildren && (
@@ -68,7 +70,7 @@ const NodeLabel = ({
         )}
         <Icon
           className={mergeClasses('text-blue-500', {
-            'text-white': isSelectedComponent,
+            'text-white': isSelectedComponent || isCurrentlyClicked,
           })}
           size={22}
         />
@@ -90,7 +92,15 @@ const NodeLabel = ({
   )
 }
 
-export const TreeView = ({ data, activeAsset, onClickAsset, expandedNodes }: ThreeViewProps) => {
+export const TreeView = ({
+  data,
+  onClickAsset,
+  expandedNodes,
+  isValidComponent,
+  selectedComponentId,
+}: ThreeViewProps) => {
+  const [currentlyClickedId, setCurrentlyClickedId] = useState<string | null>(null)
+
   const flattenedData = useMemo(() => {
     const flatten = (nodes: SensorTreeNode[], depth = 0): { node: SensorTreeNode; depth: number }[] => {
       return nodes.reduce((acc, node) => {
@@ -107,15 +117,23 @@ export const TreeView = ({ data, activeAsset, onClickAsset, expandedNodes }: Thr
   const renderRow = useCallback(
     ({ index, style }: { index: number; style: React.CSSProperties }) => {
       const { node, depth } = flattenedData[index]
-      const { name, children, sensorType, status } = node
+      const { id, name, children, sensorType, status } = node
       const ElementType = determineElementType(node)
       const hasChildren = !!children && children.length > 0
       const isExpanded = expandedNodes.has(node.id)
       const isComponentType = ElementType === 'component'
-      const isSelectedComponent = activeAsset?.id === node.id && isComponentType
+      const isClickable = isComponentType && isValidComponent(node)
+      const isSelectedComponent = id === selectedComponentId && isClickable
+      const isCurrentlyClicked = id === currentlyClickedId
 
       const handleSelect = () => {
-        onClickAsset(node, isComponentType)
+        if (isClickable) {
+          setCurrentlyClickedId(id)
+          onClickAsset(node, true)
+        } else if (hasChildren) {
+          // Toggle expand/collapse for non-clickable nodes with children
+          onClickAsset(node, false)
+        }
       }
 
       return (
@@ -124,27 +142,24 @@ export const TreeView = ({ data, activeAsset, onClickAsset, expandedNodes }: Thr
             handleSelect={handleSelect}
             labelValue={name}
             hasChildren={hasChildren}
-            isCollapsed={isExpanded}
+            isCollapsed={!isExpanded}
             ElementType={ElementType}
             sensorType={sensorType}
             status={status}
             isSelectedComponent={isSelectedComponent}
+            isClickable={isClickable}
+            isCurrentlyClicked={isCurrentlyClicked}
           />
         </div>
       )
     },
-    [flattenedData, expandedNodes, activeAsset, onClickAsset]
+    [flattenedData, expandedNodes, selectedComponentId, currentlyClickedId, onClickAsset, isValidComponent]
   )
 
   return (
     <AutoSizer>
       {({ height, width }) => (
-        <List
-          height={height}
-          itemCount={flattenedData.length}
-          itemSize={50} // Adjust this value based on your average item height
-          width={width}
-        >
+        <List height={height} itemCount={flattenedData.length} itemSize={50} width={width}>
           {renderRow}
         </List>
       )}
