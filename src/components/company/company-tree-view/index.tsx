@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { SensorTreeNode } from '../../../utils/compose-tree'
 import { determineElementType } from '../../../utils/get-element-type'
 import { CompanyTreeViewProps } from './types'
@@ -31,13 +31,7 @@ const matchFilter = (node: SensorTreeNode, activeFilter: Filter | null, search: 
   return matchEnergySensor || matchCriticalFilter || matchSearch
 }
 
-export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
-  data,
-  onClickAsset,
-  search,
-  activeFilter,
-  nodes,
-}) => {
+export const CompanyTreeView = ({ data, onClickAsset, search, activeFilter, nodes }: CompanyTreeViewProps) => {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
   const handleToggle = useCallback(

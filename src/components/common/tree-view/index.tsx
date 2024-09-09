@@ -20,7 +20,7 @@ const getIconByElementType = (typeNode: ElementType) => {
   return availableIcons[typeNode]
 }
 
-const NodeLabel: React.FC<NodeLabelProps> = ({
+const NodeLabel = ({
   handleSelect,
   hasChildren,
   isCollapsed,
@@ -29,7 +29,7 @@ const NodeLabel: React.FC<NodeLabelProps> = ({
   sensorType,
   status,
   isSelectedComponent,
-}) => {
+}: NodeLabelProps) => {
   const isNodeComponent = ElementType === 'component'
   const isOperating = status === 'operating'
   const isAlert = status === 'alert'
