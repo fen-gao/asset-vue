@@ -131,7 +131,6 @@ export const TreeView = ({
           setCurrentlyClickedId(id)
           onClickAsset(node, true)
         } else if (hasChildren) {
-          // Toggle expand/collapse for non-clickable nodes with children
           onClickAsset(node, false)
         }
       }
