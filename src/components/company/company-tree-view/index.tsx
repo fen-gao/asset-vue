@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { SensorTreeNode } from '../../../utils/compose-tree'
 import { determineElementType } from '../../../utils/get-element-type'
 import { CompanyTreeViewProps } from './types'
@@ -31,31 +31,41 @@ const matchFilter = (node: SensorTreeNode, activeFilter: Filter | null, search: 
   return matchEnergySensor || matchCriticalFilter || matchSearch
 }
 
-export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
+export const CompanyTreeView = ({
   data,
   onClickAsset,
   search,
   activeFilter,
   nodes,
-}) => {
+  activeAsset,
+}: CompanyTreeViewProps) => {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null)
 
   const handleToggle = useCallback(
-    (node: SensorTreeNode) => {
-      const { id, name, locationId, sensorType, status, parentId, gatewayId, sensorId } = node
-      const isComponentType = determineElementType(node) === 'component'
-
-      setExpandedItems((prevExpanded) => {
-        const newExpanded = new Set(prevExpanded)
-        if (newExpanded.has(node.id)) {
-          newExpanded.delete(node.id)
-        } else {
-          newExpanded.add(node.id)
-        }
-        return newExpanded
-      })
+    (node: SensorTreeNode, isComponentType: boolean) => {
       if (isComponentType) {
-        onClickAsset({ id, name, locationId: locationId!, sensorType, status, parentId, gatewayId, sensorId })
+        setSelectedComponentId(node.id)
+        onClickAsset({
+          id: node.id,
+          name: node.name,
+          locationId: node.locationId!,
+          sensorType: node.sensorType,
+          status: node.status,
+          parentId: node.parentId,
+          gatewayId: node.gatewayId,
+          sensorId: node.sensorId,
+        })
+      } else {
+        setExpandedItems((prevExpanded) => {
+          const newExpanded = new Set(prevExpanded)
+          if (newExpanded.has(node.id)) {
+            newExpanded.delete(node.id)
+          } else {
+            newExpanded.add(node.id)
+          }
+          return newExpanded
+        })
       }
     },
     [onClickAsset]
@@ -96,12 +106,18 @@ export const CompanyTreeView: React.FC<CompanyTreeViewProps> = ({
     return flatten(data)
   }, [data, expandedItems])
 
+  const isValidComponent = useCallback((node: SensorTreeNode) => {
+    return determineElementType(node) === 'component' && node.sensorType !== undefined
+  }, [])
+
   return (
     <TreeView
       data={flattenedData}
-      activeAsset={null} // You might want to pass this as a prop if needed
+      activeAsset={activeAsset}
       onClickAsset={handleToggle}
       expandedNodes={expandedItems}
+      isValidComponent={isValidComponent}
+      selectedComponentId={selectedComponentId}
     />
   )
 }

@@ -7,6 +7,8 @@ export interface ThreeViewProps {
   onClickAsset: (nextAsset: SensorTreeNode, isComponentType: boolean) => void
   activeAsset: Asset | null
   expandedNodes: Set<string>
+  isValidComponent: (node: SensorTreeNode) => boolean
+  selectedComponentId: string | null
 }
 
 export interface NodeLabelProps {
@@ -18,6 +20,8 @@ export interface NodeLabelProps {
   sensorType?: SensorType
   status?: Status | null
   isSelectedComponent: boolean
+  isClickable: boolean
+  isCurrentlyClicked: boolean
 }
 
 export interface NodeProps {
