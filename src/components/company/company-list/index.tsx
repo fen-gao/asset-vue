@@ -5,28 +5,28 @@ import { useEffect } from 'react'
 import { Button } from '../../ui/button'
 import { mergeClasses } from '../../../utils/merge-classes'
 import { AiOutlineGold } from 'react-icons/ai'
+import { Company } from '../../../context/type'
 
 export const CompanyList = () => {
   const { handleActiveCompany, activeCompany } = useCompanyContext()
 
-  const { data = [] } = useSuspenseQuery({
+  const { data = [] } = useSuspenseQuery<Company[]>({
     queryKey: ['companies'],
-    queryFn: () => getCompanies(),
+    queryFn: getCompanies,
     refetchOnWindowFocus: false,
   })
 
   useEffect(() => {
-    if (data) {
+    if (data.length > 0 && !activeCompany) {
       handleActiveCompany(data[0])
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [data, activeCompany, handleActiveCompany])
 
-  if (!data) return null
+  if (data.length === 0) return null
 
   return (
     <div className="flex items-center gap-[10px]">
-      {data?.map((company) => (
+      {data.map((company) => (
         <Button
           key={company.id}
           className={mergeClasses('', {
@@ -35,7 +35,7 @@ export const CompanyList = () => {
           onClick={() => handleActiveCompany(company)}
         >
           <AiOutlineGold size={14} />
-          {company?.name}
+          {company.name}
         </Button>
       ))}
     </div>

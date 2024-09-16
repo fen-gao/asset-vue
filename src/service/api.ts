@@ -10,15 +10,16 @@ const api = axios.create({
 
 const cache = new Map<string, { data: any; timestamp: number }>()
 
-const fetchWithCache = async <T>(url: string, ttl = 60000): Promise<T> => {
-  const cachedData = cache.get(url)
+const fetchWithCache = async <T>(url: string, params: Record<string, any> = {}, ttl = 60000): Promise<T> => {
+  const cacheKey = `${url}?${new URLSearchParams(params).toString()}`
+  const cachedData = cache.get(cacheKey)
   if (cachedData && Date.now() - cachedData.timestamp < ttl) {
     return cachedData.data
   }
 
   try {
-    const { data } = await api.get<T>(url)
-    cache.set(url, { data, timestamp: Date.now() })
+    const { data } = await api.get<T>(url, { params })
+    cache.set(cacheKey, { data, timestamp: Date.now() })
     return data
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -31,11 +32,13 @@ const fetchWithCache = async <T>(url: string, ttl = 60000): Promise<T> => {
 
 export const getCompanies = memoize(() => fetchWithCache<Company[]>('/companies'))
 
-export const getLocations = memoize((companyId: string) =>
-  fetchWithCache<Location[]>(`/companies/${companyId}/locations`)
+export const getLocations = memoize((companyId: string, page = 1, limit = 20) =>
+  fetchWithCache<Location[]>(`/companies/${companyId}/locations`, { page, limit })
 )
 
-export const getAssets = memoize((companyId: string) => fetchWithCache<Asset[]>(`/companies/${companyId}/assets`))
+export const getAssets = memoize((companyId: string, page = 1, limit = 20) =>
+  fetchWithCache<Asset[]>(`/companies/${companyId}/assets`, { page, limit })
+)
 
 export const getCompanyData = async (companyId: string) => {
   try {
