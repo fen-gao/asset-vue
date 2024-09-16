@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
-import { getCompanyData } from '../service/api'
+import { useCompanyDataQuery } from '../service/api'
 import { useMemo, useCallback } from 'react'
 
 import { SensorTreeNode, createLocationAssetHierarchy } from '../utils/compose-tree'
@@ -13,11 +12,7 @@ interface UseCompanyTreeProps {
 }
 
 export const useCompanyTree = ({ activeCompany, activeFilter, search }: UseCompanyTreeProps) => {
-  const { data: companyData, isLoading } = useQuery({
-    queryKey: ['companyData', activeCompany?.id],
-    queryFn: () => getCompanyData(activeCompany!.id),
-    enabled: !!activeCompany,
-  })
+  const { data: companyData, isLoading } = useCompanyDataQuery(activeCompany?.id ?? null)
 
   const companyTree = useMemo(() => {
     if (companyData) {
