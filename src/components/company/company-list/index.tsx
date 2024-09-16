@@ -1,20 +1,13 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { useCompanyContext } from '../../../hooks/use-company-context'
-import { getCompanies } from '../../../service/api'
+import { useCompaniesQuery } from '../../../service/api'
 import { useEffect } from 'react'
 import { Button } from '../../ui/button'
 import { mergeClasses } from '../../../utils/merge-classes'
 import { AiOutlineGold } from 'react-icons/ai'
-import { Company } from '../../../context/type'
 
 export const CompanyList = () => {
   const { handleActiveCompany, activeCompany } = useCompanyContext()
-
-  const { data = [] } = useSuspenseQuery<Company[]>({
-    queryKey: ['companies'],
-    queryFn: getCompanies,
-    refetchOnWindowFocus: false,
-  })
+  const { data = [] } = useCompaniesQuery()
 
   useEffect(() => {
     if (data.length > 0 && !activeCompany) {
