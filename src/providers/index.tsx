@@ -4,13 +4,15 @@ import { useState } from 'react'
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(
-    new QueryClient({
-      defaultOptions: {
-        queries: {
-          staleTime: 6000,
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60000,
+            gcTime: 3600000,
+          },
         },
-      },
-    })
+      })
   )
 
   return (
