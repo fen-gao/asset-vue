@@ -45,7 +45,8 @@ export const CompanyTreeView = ({
   const handleToggle = useCallback(
     (node: SensorTreeNode, isComponentType: boolean) => {
       if (isComponentType) {
-        setSelectedComponentId(node.id)
+        // Clear previous selection and set new one (single selection)
+        setSelectedComponentId(prevId => prevId === node.id ? null : node.id)
         onClickAsset({
           id: node.id,
           name: node.name,
@@ -92,19 +93,6 @@ export const CompanyTreeView = ({
     setExpandedItems(nodesToExpand)
   }, [search, nodes, activeFilter])
 
-  const flattenedData = useMemo(() => {
-    const flatten = (items: SensorTreeNode[], depth = 0): SensorTreeNode[] => {
-      return items.reduce((acc: SensorTreeNode[], item) => {
-        const newItem = { ...item, depth }
-        acc.push(newItem)
-        if (item.children && expandedItems.has(item.id)) {
-          acc.push(...flatten(item.children, depth + 1))
-        }
-        return acc
-      }, [])
-    }
-    return flatten(data)
-  }, [data, expandedItems])
 
   const isValidComponent = useCallback((node: SensorTreeNode) => {
     return determineElementType(node) === 'component' && node.sensorType !== undefined
@@ -112,7 +100,7 @@ export const CompanyTreeView = ({
 
   return (
     <TreeView
-      data={flattenedData}
+      data={data}
       activeAsset={activeAsset}
       onClickAsset={handleToggle}
       expandedNodes={expandedItems}

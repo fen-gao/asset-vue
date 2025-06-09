@@ -57,20 +57,20 @@ const NodeLabel = ({
     >
       <div
         className={mergeClasses('ps-1 flex items-center gap-2', {
-          'bg-blue-500 text-white': isSelectedComponent || isCurrentlyClicked,
+          'bg-blue-500 text-white': isSelectedComponent,
         })}
       >
         {hasChildren && (
           <AiOutlineDown
             size={10}
             className={mergeClasses('', {
-              'rotate-180': isCollapsed,
+              'rotate-180': !isCollapsed,
             })}
           />
         )}
         <Icon
           className={mergeClasses('text-blue-500', {
-            'text-white': isSelectedComponent || isCurrentlyClicked,
+            'text-white': isSelectedComponent,
           })}
           size={22}
         />
@@ -99,7 +99,6 @@ export const TreeView = ({
   isValidComponent,
   selectedComponentId,
 }: ThreeViewProps) => {
-  const [currentlyClickedId, setCurrentlyClickedId] = useState<string | null>(null)
 
   const flattenedData = useMemo(() => {
     const flatten = (nodes: SensorTreeNode[], depth = 0): { node: SensorTreeNode; depth: number }[] => {
@@ -124,11 +123,9 @@ export const TreeView = ({
       const isComponentType = ElementType === 'component'
       const isClickable = isComponentType && isValidComponent(node)
       const isSelectedComponent = id === selectedComponentId && isClickable
-      const isCurrentlyClicked = id === currentlyClickedId
 
       const handleSelect = () => {
         if (isClickable) {
-          setCurrentlyClickedId(id)
           onClickAsset(node, true)
         } else if (hasChildren) {
           onClickAsset(node, false)
@@ -147,12 +144,12 @@ export const TreeView = ({
             status={status}
             isSelectedComponent={isSelectedComponent}
             isClickable={isClickable}
-            isCurrentlyClicked={isCurrentlyClicked}
+            isCurrentlyClicked={false}
           />
         </div>
       )
     },
-    [flattenedData, expandedNodes, selectedComponentId, currentlyClickedId, onClickAsset, isValidComponent]
+    [flattenedData, expandedNodes, selectedComponentId, onClickAsset, isValidComponent]
   )
 
   return (
